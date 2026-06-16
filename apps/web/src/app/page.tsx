@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { CheckCircle, Mail, FileSearch, TrendingUp, FileCheck, Inbox } from "lucide-react";
+import { ModeToggle } from "@/components/theme/theme-toggle";
 
 export default function LandingPage() {
   return (
@@ -13,7 +14,8 @@ export default function LandingPage() {
             <FileSearch className="size-5 text-accent" />
             <span className="font-semibold text-foreground">Patent Pilot</span>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
+            <ModeToggle />
             <Link
               href="/login"
               className="text-sm text-muted-foreground hover:text-foreground transition-colors"
