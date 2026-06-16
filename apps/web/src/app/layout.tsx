@@ -20,7 +20,7 @@ export const metadata: Metadata = {
     default: process.env.NEXT_PUBLIC_APP_NAME || "SaaS Platform",
     template: `%s | ${process.env.NEXT_PUBLIC_APP_NAME || "SaaS Platform"}`,
   },
-  description: "Modern SaaS platform with web and mobile apps.",
+  description: "KI-kuratierte Patent-Briefings fuer den deutschen Mittelstand. Jede Woche: welche Patente in Ihrem Technologiefeld frei geworden sind.",
 };
 
 export default function RootLayout({
