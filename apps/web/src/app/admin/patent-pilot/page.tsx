@@ -88,13 +88,13 @@ export default function AdminPatentbriefPage() {
       <Card className="p-6">
         <h2 className="font-medium mb-3">Inngest-Funktionen</h2>
         <ul className="space-y-2 text-sm text-muted-foreground font-mono">
-          <li>nightly-patent-ingest — cron 01:00 UTC daily</li>
-          <li>sunday-briefing-trigger — cron 21:00 UTC Sunday</li>
-          <li>generate-user-briefing — event: briefing/generate</li>
-          <li>cleanup-sessions — cron 03:00 UTC daily</li>
-          <li>send-welcome-email — event: user/signup</li>
-          <li>payment-failed-reminder — event: stripe/payment.failed</li>
-          <li>subscription-canceled — event: stripe/subscription.canceled</li>
+          <li>nightly-patent-ingest:cron 01:00 UTC daily</li>
+          <li>sunday-briefing-trigger:cron 21:00 UTC Sunday</li>
+          <li>generate-user-briefing:event: briefing/generate</li>
+          <li>cleanup-sessions:cron 03:00 UTC daily</li>
+          <li>send-welcome-email:event: user/signup</li>
+          <li>payment-failed-reminder:event: stripe/payment.failed</li>
+          <li>subscription-canceled:event: stripe/subscription.canceled</li>
         </ul>
       </Card>
     </div>

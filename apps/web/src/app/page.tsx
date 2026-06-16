@@ -6,7 +6,7 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen bg-background">
 
-      {/* Masthead nav — navy, editorial */}
+      {/* Masthead nav navy, editorial */}
       <header className="bg-primary text-primary-foreground">
         <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
           <Link href="/" className="font-serif text-xl font-semibold tracking-tight text-primary-foreground">
@@ -33,7 +33,7 @@ export default function LandingPage() {
         <div className="h-px bg-accent/60" />
       </header>
 
-      {/* Hero — editorial, typography-led */}
+      {/* Hero editorial, typography-led */}
       <section className="max-w-3xl mx-auto px-6 py-20">
         <p className="text-xs font-sans uppercase tracking-widest text-muted-foreground mb-6">
           Jeden Montag um 8 Uhr &middot; Patent-Intelligence für den Mittelstand
@@ -64,7 +64,7 @@ export default function LandingPage() {
         <div className="h-px bg-border" />
       </div>
 
-      {/* What's in every briefing — editorial 3-column text */}
+      {/* What's in every briefing editorial 3-column text */}
       <section className="max-w-5xl mx-auto px-6 py-16">
         <h2 className="font-serif text-2xl font-semibold text-foreground mb-2">
           Was Sie jeden Montag erhalten
@@ -105,7 +105,7 @@ export default function LandingPage() {
         <div className="h-px bg-border" />
       </div>
 
-      {/* Positioning — editorial pull quote layout */}
+      {/* Positioning editorial pull quote layout */}
       <section className="max-w-5xl mx-auto px-6 py-16">
         <div className="grid md:grid-cols-2 gap-16 items-start">
           <div>
@@ -132,7 +132,7 @@ export default function LandingPage() {
             </ul>
           </div>
 
-          {/* Pull quote — replaces the hero-metric block */}
+          {/* Pull quote replaces the hero-metric block */}
           <blockquote className="border-l-2 border-accent pl-8 py-2">
             <p className="font-serif text-2xl font-semibold text-foreground leading-snug mb-6">
               &ldquo;83 Prozent aller Patente verfallen, bevor sie die 20-Jahres-Frist erreichen.
@@ -145,7 +145,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* CTA band — navy */}
+      {/* CTA band navy */}
       <section className="bg-primary text-primary-foreground py-16">
         <div className="max-w-3xl mx-auto text-center px-6">
           <h2 className="font-serif text-3xl font-semibold mb-4">
@@ -164,7 +164,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Footer — navy */}
+      {/* Footer navy */}
       <footer className="bg-primary border-t border-primary-foreground/10 py-10">
         <div className="max-w-5xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-primary-foreground/50">
           <p>

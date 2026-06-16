@@ -14,7 +14,7 @@ export default function AdminOverviewPage() {
         <Card>
           <CardHeader>
             <CardDescription>Total Users</CardDescription>
-            <CardTitle className="text-3xl">—</CardTitle>
+            <CardTitle className="text-3xl">0</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-xs text-muted-foreground">Connect database to see stats</p>
@@ -24,7 +24,7 @@ export default function AdminOverviewPage() {
         <Card>
           <CardHeader>
             <CardDescription>Active Subscriptions</CardDescription>
-            <CardTitle className="text-3xl">—</CardTitle>
+            <CardTitle className="text-3xl">0</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-xs text-muted-foreground">Stripe + RevenueCat</p>
@@ -34,7 +34,7 @@ export default function AdminOverviewPage() {
         <Card>
           <CardHeader>
             <CardDescription>MRR</CardDescription>
-            <CardTitle className="text-3xl">—</CardTitle>
+            <CardTitle className="text-3xl">0</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-xs text-muted-foreground">Monthly Recurring Revenue</p>
