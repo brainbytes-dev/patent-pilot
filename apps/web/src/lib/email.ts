@@ -1,5 +1,7 @@
 import { Resend } from 'resend';
+import * as React from 'react';
 import { DEMO_MODE } from '@/lib/demo-mode';
+import { BriefingEmail } from '@repo/email';
 
 let resend: Resend | null = null;
 
@@ -65,6 +67,49 @@ export async function sendPaymentFailedEmail(email: string) {
     console.error('Failed to send payment failed email:', error);
     throw error;
   }
+}
+
+export async function sendBriefingEmail({
+  to,
+  firstName,
+  weekNumber,
+  year,
+  htmlContent,
+  briefingId,
+}: {
+  to: string;
+  firstName?: string;
+  weekNumber: number;
+  year: number;
+  htmlContent: string;
+  briefingId: string;
+}): Promise<string> {
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://patentpilot.de';
+  const dryRun = process.env.RESEND_DRY_RUN === 'true';
+
+  if (DEMO_MODE || dryRun) {
+    console.log(`[EMAIL DRY_RUN] to=${to} briefingId=${briefingId}`);
+    return 'dry-run-message-id';
+  }
+
+  const { data, error } = await getResend().emails.send({
+    from: process.env.BRIEFING_FROM_EMAIL ?? 'briefing@patentpilot.de',
+    replyTo: process.env.BRIEFING_REPLY_TO ?? 'support@patentpilot.de',
+    to,
+    subject: `Ihr Patent-Briefing, KW ${weekNumber}/${year}`,
+    react: React.createElement(BriefingEmail, {
+      weekNumber,
+      year,
+      briefingHtml: htmlContent,
+      dashboardUrl: `${appUrl}/briefings`,
+      watchlistUrl: `${appUrl}/watchlist`,
+      unsubscribeUrl: `${appUrl}/api/unsubscribe?briefingId=${briefingId}`,
+      userFirstName: firstName,
+    }),
+  });
+
+  if (error) throw new Error(`Resend error: ${JSON.stringify(error)}`);
+  return data?.id ?? '';
 }
 
 export async function sendSubscriptionCanceledEmail(email: string) {

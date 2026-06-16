@@ -8,6 +8,8 @@ import {
   jsonb,
   uniqueIndex,
   index,
+  integer,
+  date,
 } from "drizzle-orm/pg-core";
 
 // ─── Users ──────────────────────────────────────────────────────────
@@ -162,6 +164,134 @@ export const mobilePayments = pgTable(
   ]
 );
 
+// ─── Patents ────────────────────────────────────────────────────────
+export const patents = pgTable(
+  "patents",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    patentNumber: text("patent_number").notNull().unique(),
+    title: text("title").notNull(),
+    titleDe: text("title_de"),
+    abstractEn: text("abstract_en"),
+    abstractDe: text("abstract_de"),
+    filingDate: date("filing_date"),
+    grantDate: date("grant_date"),
+    expiryDate: date("expiry_date"),
+    owner: text("owner"),
+    cpcCodes: text("cpc_codes").array().default([]),
+    // status: active | lapsed | for_sale | assigned
+    status: text("status").notNull().default("active"),
+    // source: epo | dpma
+    source: text("source").default("epo"),
+    rawData: jsonb("raw_data"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (table) => [
+    index("idx_patents_number").on(table.patentNumber),
+    index("idx_patents_status").on(table.status),
+    index("idx_patents_expiry").on(table.expiryDate),
+  ]
+);
+
+// ─── Patent Events ───────────────────────────────────────────────────
+export const patentEvents = pgTable(
+  "patent_events",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    patentId: uuid("patent_id")
+      .notNull()
+      .references(() => patents.id, { onDelete: "cascade" }),
+    // eventType: FILED | GRANTED | LAPSED | ASSIGNED | LISTED_FOR_SALE
+    eventType: text("event_type").notNull(),
+    eventDate: date("event_date").notNull(),
+    details: jsonb("details"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (table) => [
+    index("idx_patent_events_patent").on(table.patentId),
+    index("idx_patent_events_type").on(table.eventType),
+    index("idx_patent_events_date").on(table.eventDate),
+  ]
+);
+
+// ─── Watchlists ──────────────────────────────────────────────────────
+export const watchlists = pgTable(
+  "watchlists",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" })
+      .unique(),
+    // industries: maschinenbau | chemie | medtech | elektro | automotive
+    industries: text("industries").array().default([]),
+    keywords: text("keywords").array().default([]),
+    cpcCodes: text("cpc_codes").array().default([]),
+    active: boolean("active").default(true).notNull(),
+    onboardingComplete: boolean("onboarding_complete").default(false).notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (table) => [
+    index("idx_watchlists_user").on(table.userId),
+    index("idx_watchlists_active").on(table.active),
+  ]
+);
+
+// ─── Briefings ───────────────────────────────────────────────────────
+export const briefings = pgTable(
+  "briefings",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    // weekOf: Monday of the briefing week (YYYY-MM-DD)
+    weekOf: date("week_of").notNull(),
+    // status: pending | generated | sent | failed
+    status: text("status").default("pending").notNull(),
+    htmlContent: text("html_content"),
+    textContent: text("text_content"),
+    sentAt: timestamp("sent_at"),
+    openedAt: timestamp("opened_at"),
+    clickedAt: timestamp("clicked_at"),
+    resendMessageId: text("resend_message_id"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (table) => [
+    index("idx_briefings_user").on(table.userId),
+    index("idx_briefings_week").on(table.weekOf),
+    index("idx_briefings_status").on(table.status),
+    uniqueIndex("idx_briefings_user_week").on(table.userId, table.weekOf),
+  ]
+);
+
+// ─── Briefing Patents (join table) ───────────────────────────────────
+export const briefingPatents = pgTable(
+  "briefing_patents",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    briefingId: uuid("briefing_id")
+      .notNull()
+      .references(() => briefings.id, { onDelete: "cascade" }),
+    patentId: uuid("patent_id")
+      .notNull()
+      .references(() => patents.id, { onDelete: "cascade" }),
+    // category: free | for_sale | strategy
+    category: text("category").notNull(),
+    relevanceScore: integer("relevance_score"),
+    relevanceReasonDe: text("relevance_reason_de"),
+    sortOrder: integer("sort_order").default(0),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (table) => [
+    index("idx_bp_briefing").on(table.briefingId),
+    index("idx_bp_patent").on(table.patentId),
+  ]
+);
+
 // ─── Type Exports ───────────────────────────────────────────────────
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
@@ -179,3 +309,13 @@ export type MobileSubscription = typeof mobileSubscriptions.$inferSelect;
 export type NewMobileSubscription = typeof mobileSubscriptions.$inferInsert;
 export type MobilePayment = typeof mobilePayments.$inferSelect;
 export type NewMobilePayment = typeof mobilePayments.$inferInsert;
+export type Patent = typeof patents.$inferSelect;
+export type NewPatent = typeof patents.$inferInsert;
+export type PatentEvent = typeof patentEvents.$inferSelect;
+export type NewPatentEvent = typeof patentEvents.$inferInsert;
+export type Watchlist = typeof watchlists.$inferSelect;
+export type NewWatchlist = typeof watchlists.$inferInsert;
+export type Briefing = typeof briefings.$inferSelect;
+export type NewBriefing = typeof briefings.$inferInsert;
+export type BriefingPatent = typeof briefingPatents.$inferSelect;
+export type NewBriefingPatent = typeof briefingPatents.$inferInsert;

@@ -6,66 +6,64 @@ import { useSession } from "@/lib/auth-client"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { CheckCircle } from "lucide-react"
+import Link from "next/link"
 
 interface Plan {
   id: string
   name: string
   description: string
   price: number
-  interval: "month" | "year"
   features: string[]
-  priceId: string // Stripe price ID
-  popular?: boolean
+  priceId: string
+  highlight?: boolean
 }
 
 const getPlans = (): Plan[] => [
   {
-    id: "free",
-    name: "Free",
-    description: "Perfect for trying out",
+    id: "trial",
+    name: "Trial",
+    description: "2 Briefings kostenlos testen",
     price: 0,
-    interval: "month",
     features: [
-      "Up to 3 projects",
-      "Basic analytics",
-      "Community support",
-      "1 GB storage",
+      "2 Briefings gratis",
+      "1 Branche",
+      "3 Keywords",
+      "E-Mail-Zustellung",
+      "Dashboard-Archiv",
     ],
     priceId: "free",
   },
   {
-    id: "pro",
-    name: "Pro",
-    description: "Best for growing teams",
-    price: 29,
-    interval: "month",
+    id: "starter",
+    name: "Starter",
+    description: "Für Innovations-Verantwortliche",
+    price: 249,
     features: [
-      "Unlimited projects",
-      "Advanced analytics",
-      "Priority support",
-      "100 GB storage",
-      "Team collaboration",
-      "Custom branding",
+      "Wöchentliche Briefings",
+      "1 Branche",
+      "3 Keywords",
+      "E-Mail + Dashboard-Archiv",
+      "Alle 3 Briefing-Sektionen",
+      "Kein Jahresvertrag",
     ],
-    priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_PRO || "price_1234567890",
-    popular: true,
+    priceId: process.env.NEXT_PUBLIC_STRIPE_STARTER_PRICE_ID ?? "",
   },
   {
-    id: "enterprise",
-    name: "Enterprise",
-    description: "For large organizations",
-    price: 99,
-    interval: "month",
+    id: "pro",
+    name: "Pro",
+    description: "Für strategisch aktive Teams",
+    price: 499,
     features: [
-      "Everything in Pro",
-      "Custom integrations",
-      "Dedicated support",
-      "Unlimited storage",
-      "SSO & advanced security",
-      "SLA guarantee",
-      "API access",
+      "Wöchentliche Briefings",
+      "3 Branchen",
+      "Unlimitierte Keywords",
+      "E-Mail + Dashboard-Archiv",
+      "CPC-Verfeinerung",
+      "Prioritäts-Support",
     ],
-    priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_ENTERPRISE || "price_0987654321",
+    priceId: process.env.NEXT_PUBLIC_STRIPE_PRO_PRICE_ID ?? "",
+    highlight: true,
   },
 ]
 
@@ -76,7 +74,7 @@ export default function PricingPage() {
   const plans = getPlans()
 
   const handleSelectPlan = async (plan: Plan) => {
-    if (plan.id === "free") {
+    if (plan.id === "trial") {
       router.push("/signup")
       return
     }
@@ -93,10 +91,8 @@ export default function PricingPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ priceId: plan.priceId }),
       })
-
       if (!response.ok) throw new Error("Failed to create checkout")
-
-      const { url } = await response.json()
+      const { url } = await response.json() as { url: string }
       window.location.href = url
     } catch (error) {
       console.error("Checkout error:", error)
@@ -106,95 +102,89 @@ export default function PricingPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
-      {/* Header */}
-      <header className="border-b">
-        <div className="container mx-auto px-4 py-6 flex justify-between items-center">
-          <h1 className="text-2xl font-bold">nextjs-expo</h1>
+    <div className="min-h-screen bg-background flex flex-col">
+      {/* Nav */}
+      <header className="border-b bg-background/95 backdrop-blur sticky top-0 z-50">
+        <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
+          <Link href="/" className="text-lg font-semibold text-foreground">
+            Patent Pilot
+          </Link>
           {session ? (
-            <Button variant="outline" onClick={() => router.push("/dashboard")}>
+            <Button variant="outline" size="sm" onClick={() => router.push("/dashboard")}>
               Dashboard
             </Button>
           ) : (
-            <div className="space-x-2">
-              <Button variant="ghost" onClick={() => router.push("/login")}>
-                Login
+            <div className="flex items-center gap-3">
+              <Button variant="ghost" size="sm" onClick={() => router.push("/login")}>
+                Anmelden
               </Button>
-              <Button onClick={() => router.push("/signup")}>Sign Up</Button>
+              <Button
+                size="sm"
+                className="bg-accent hover:bg-accent/90 text-accent-foreground"
+                onClick={() => router.push("/signup")}
+              >
+                Kostenlos testen
+              </Button>
             </div>
           )}
         </div>
       </header>
 
       {/* Hero */}
-      <section className="container mx-auto px-4 py-16 text-center">
-        <h2 className="text-4xl font-bold mb-4">Simple, Transparent Pricing</h2>
-        <p className="text-xl text-muted-foreground mb-8">
-          Choose the perfect plan for your needs. Always flexible to scale.
+      <section className="max-w-5xl mx-auto px-6 py-16 text-center">
+        <h1 className="text-3xl font-semibold mb-4">Einfache, transparente Preise</h1>
+        <p className="text-muted-foreground text-lg">
+          2 Briefings kostenlos. Dann 249 € oder 499 € pro Monat. Kein Jahresvertrag.
         </p>
       </section>
 
-      {/* Pricing Cards */}
-      <section className="container mx-auto px-4 pb-16">
+      {/* Cards */}
+      <section className="max-w-5xl mx-auto px-6 pb-16">
         <div className="grid gap-8 md:grid-cols-3">
           {plans.map((plan) => (
             <Card
               key={plan.id}
               className={`flex flex-col relative ${
-                plan.popular ? "border-primary border-2 shadow-lg" : ""
+                plan.highlight ? "border-accent border-2 shadow-lg" : ""
               }`}
             >
-              {plan.popular && (
-                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                  <Badge variant="default">Most Popular</Badge>
+              {plan.highlight && (
+                <div className="absolute -top-4 left-1/2 -translate-x-1/2">
+                  <Badge className="bg-accent text-accent-foreground">Empfohlen</Badge>
                 </div>
               )}
-
               <CardHeader>
                 <CardTitle>{plan.name}</CardTitle>
                 <CardDescription>{plan.description}</CardDescription>
               </CardHeader>
-
               <CardContent className="flex-1 space-y-6">
                 <div>
-                  <p className="text-4xl font-bold">
-                    {plan.price === 0 ? "Free" : `$${plan.price}`}
+                  <p className="text-4xl font-semibold font-mono">
+                    {plan.price === 0 ? "Gratis" : `${plan.price} €`}
                   </p>
                   {plan.price > 0 && (
-                    <p className="text-sm text-muted-foreground">
-                      per {plan.interval}
-                    </p>
+                    <p className="text-sm text-muted-foreground">pro Monat</p>
                   )}
                 </div>
-
                 <ul className="space-y-3">
                   {plan.features.map((feature, idx) => (
                     <li key={idx} className="flex items-center gap-2 text-sm">
-                      <svg
-                        className="h-4 w-4 text-green-600 flex-shrink-0"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M5 13l4 4L19 7"
-                        />
-                      </svg>
+                      <CheckCircle className="size-4 text-accent flex-shrink-0" />
                       {feature}
                     </li>
                   ))}
                 </ul>
-
                 <Button
                   onClick={() => handleSelectPlan(plan)}
                   disabled={isLoading}
-                  variant={plan.popular ? "default" : "outline"}
-                  className="w-full"
+                  className={`w-full ${
+                    plan.highlight
+                      ? "bg-accent hover:bg-accent/90 text-accent-foreground"
+                      : ""
+                  }`}
+                  variant={plan.highlight ? "default" : "outline"}
                 >
-                  {isLoading ? "Loading..." : plan.id === "free" ? "Get Started" : "Subscribe Now"}
+                  {plan.id === "trial" ? "Kostenlos starten" : "Jetzt abonnieren"}
                 </Button>
               </CardContent>
             </Card>
@@ -203,51 +193,33 @@ export default function PricingPage() {
       </section>
 
       {/* FAQ */}
-      <section className="bg-muted/50 py-16">
-        <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center mb-12">Frequently Asked Questions</h2>
-
-          <div className="grid gap-8 md:max-w-2xl md:mx-auto">
-            <div>
-              <h3 className="font-semibold mb-2">Can I upgrade or downgrade anytime?</h3>
-              <p className="text-muted-foreground">
-                Yes, you can upgrade or downgrade your plan at any time. Changes take effect on your next billing cycle.
-              </p>
+      <section className="bg-muted/30 py-16">
+        <div className="max-w-2xl mx-auto px-6 space-y-8">
+          <h2 className="text-2xl font-semibold text-center mb-8">Häufige Fragen</h2>
+          {[
+            {
+              q: "Brauche ich eine Kreditkarte für den Trial?",
+              a: "Nein. Die ersten 2 Briefings sind komplett kostenlos, ohne Zahlungsinformationen.",
+            },
+            {
+              q: "Kann ich jederzeit kündigen?",
+              a: "Ja. Kein Jahresvertrag, keine Kündigungsfrist. Kündigung gilt zum Ende des laufenden Monats.",
+            },
+            {
+              q: "Woher kommen die Patentdaten?",
+              a: "Aus dem offiziellen EPO-Register (European Patent Office) via deren OPS-API. Alle Daten sind öffentlich und ohne Gewähr.",
+            },
+            {
+              q: "Ist das eine Rechtsberatung?",
+              a: "Nein. Patent Pilot liefert strukturierte Informationen aus öffentlichen Patentregistern. Für rechtliche Entscheidungen wenden Sie sich an einen Patentanwalt.",
+            },
+          ].map(({ q, a }) => (
+            <div key={q}>
+              <h3 className="font-semibold mb-2">{q}</h3>
+              <p className="text-muted-foreground text-sm leading-relaxed">{a}</p>
             </div>
-
-            <div>
-              <h3 className="font-semibold mb-2">Do you offer annual billing?</h3>
-              <p className="text-muted-foreground">
-                We offer monthly billing currently. Annual billing with discounts is coming soon. Contact us for details.
-              </p>
-            </div>
-
-            <div>
-              <h3 className="font-semibold mb-2">What payment methods do you accept?</h3>
-              <p className="text-muted-foreground">
-                We accept all major credit cards (Visa, Mastercard, American Express) through Stripe.
-              </p>
-            </div>
-
-            <div>
-              <h3 className="font-semibold mb-2">Is there a free trial?</h3>
-              <p className="text-muted-foreground">
-                You can start with our Free plan to test all features. Upgrade anytime to unlock advanced capabilities.
-              </p>
-            </div>
-          </div>
+          ))}
         </div>
-      </section>
-
-      {/* CTA */}
-      <section className="container mx-auto px-4 py-16 text-center">
-        <h2 className="text-3xl font-bold mb-4">Ready to get started?</h2>
-        <p className="text-lg text-muted-foreground mb-8">
-          Join thousands of users building amazing things with our platform.
-        </p>
-        <Button size="lg" onClick={() => router.push("/signup")}>
-          Start Free Today
-        </Button>
       </section>
     </div>
   )
