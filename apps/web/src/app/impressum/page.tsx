@@ -11,20 +11,20 @@ export const metadata: Metadata = {
 export default function ImpressumPage() {
   return (
     <div className="min-h-screen bg-background">
-      <nav className="border-b bg-background/95 backdrop-blur sticky top-0 z-50">
+      <header className="bg-primary text-primary-foreground sticky top-0 z-50">
         <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2">
-            <FileSearch className="size-5 text-accent" />
-            <span className="font-semibold text-foreground">Patent Pilot</span>
+          <Link href="/" className="font-serif text-xl font-semibold tracking-tight text-primary-foreground">
+            Patentbrief
           </Link>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
             <ModeToggle />
-            <Link href="/login" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+            <Link href="/login" className="text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors">
               Anmelden
             </Link>
           </div>
         </div>
-      </nav>
+        <div className="h-px bg-accent/60" />
+      </header>
 
       <div className="max-w-2xl mx-auto px-6 py-16 prose prose-neutral dark:prose-invert">
         <h1>Impressum</h1>
@@ -57,7 +57,7 @@ export default function ImpressumPage() {
 
         <h2>Patentdaten</h2>
         <p>
-          Die auf Patent Pilot angezeigten Patentdaten stammen ausschliesslich aus
+          Die auf Patentbrief angezeigten Patentdaten stammen ausschliesslich aus
           amtlichen Registern des Europäischen Patentamts (EPO) und werden
           periodisch aktualisiert. Trotz sorgfältiger Verarbeitung übernehmen wir
           keine Garantie für die Korrektheit, Vollständigkeit oder Aktualität der

@@ -1,26 +1,32 @@
 import Link from "next/link"
-import { FileSearch } from "lucide-react"
 import { LoginForm } from "@/components/login-form"
 import { ModeToggle } from "@/components/theme/theme-toggle"
 
 export default function LoginPage() {
   return (
-    <div className="grid min-h-svh lg:grid-cols-2">
-      <div className="flex flex-col gap-4 p-6 md:p-10">
-        <div className="flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2 font-medium">
-            <FileSearch className="size-5 text-accent" />
-            <span>Patent Pilot</span>
+    <div className="min-h-svh flex flex-col">
+      <header className="bg-primary text-primary-foreground">
+        <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
+          <Link href="/" className="font-serif text-xl font-semibold tracking-tight text-primary-foreground">
+            Patentbrief
           </Link>
           <ModeToggle />
         </div>
-        <div className="flex flex-1 items-center justify-center">
-          <div className="w-full max-w-xs">
-            <LoginForm />
-          </div>
+        <div className="h-px bg-accent/60" />
+      </header>
+
+      <div className="flex flex-1 items-center justify-center px-6 py-16">
+        <div className="w-full max-w-sm">
+          <h1 className="font-serif text-2xl font-semibold text-foreground mb-2">Anmelden</h1>
+          <p className="text-sm text-muted-foreground mb-8">
+            Noch kein Konto?{" "}
+            <Link href="/signup" className="text-accent hover:underline">
+              Kostenlos registrieren
+            </Link>
+          </p>
+          <LoginForm />
         </div>
       </div>
-      <div className="relative hidden lg:block bg-gradient-to-br from-accent/20 via-accent/5 to-background" />
     </div>
   )
 }
