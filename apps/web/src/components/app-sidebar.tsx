@@ -25,7 +25,7 @@ import {
 
 const data = {
   user: {
-    name: "Patent Pilot",
+    name: "Patentbrief",
     email: "",
     avatar: "",
   },
@@ -72,7 +72,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             >
               <a href="/dashboard">
                 <FileSearch className="size-5!" />
-                <span className="text-base font-semibold">Patent Pilot</span>
+                <span className="text-base font-semibold">Patentbrief</span>
               </a>
             </SidebarMenuButton>
           </SidebarMenuItem>

@@ -33,10 +33,10 @@ export default function OnboardingPage() {
       <div className="w-full max-w-2xl">
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-6">
-            <span className="text-lg font-semibold text-foreground">Patent Pilot</span>
+            <span className="text-lg font-semibold text-foreground">Patentbrief</span>
           </div>
           <h1 className="text-2xl font-semibold text-foreground">
-            Patent Pilot einrichten
+            Patentbrief einrichten
           </h1>
           <p className="text-muted-foreground mt-1">Schritt {step} von 3</p>
           <Progress value={(step / 3) * 100} className="mt-3" />

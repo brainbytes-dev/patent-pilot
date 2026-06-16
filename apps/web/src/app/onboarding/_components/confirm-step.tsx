@@ -57,7 +57,7 @@ export function ConfirmStep({ industries, keywords, onBack, onFinish, saving }: 
           className="flex-[2] bg-accent hover:bg-accent/90 text-accent-foreground"
         >
           <CheckCircle className="size-4 mr-2" />
-          {saving ? "Wird gespeichert..." : "Patent Pilot starten"}
+          {saving ? "Wird gespeichert..." : "Patentbrief starten"}
         </Button>
       </div>
     </div>

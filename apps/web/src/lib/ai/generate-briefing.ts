@@ -43,7 +43,7 @@ export function buildBriefingPrompt(ctx: BriefingContext, patents: BriefingPaten
     ? `- ${patents.strategyPatent.patentNumber}: "${patents.strategyPatent.title}" (${patents.strategyPatent.reason})`
     : "- Kein Strategie-Impuls diese Woche.";
 
-  return `Du bist Patent Pilot, ein KI-Assistent fuer Patent-Intelligence im deutschen Mittelstand.
+  return `Du bist Patentbrief, ein KI-Assistent fuer Patent-Intelligence im deutschen Mittelstand.
 
 Erstelle ein woechentliches Patent-Briefing fuer KW ${ctx.weekNumber}/${ctx.year}.
 Nutzer-Keywords: ${ctx.userKeywords.join(", ") || "nicht angegeben"}.

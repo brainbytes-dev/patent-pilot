@@ -6,7 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { RefreshCw, Send, CheckCircle } from "lucide-react";
 
-export default function AdminPatentPilotPage() {
+export default function AdminPatentbriefPage() {
   const [ingestStatus, setIngestStatus] = useState("");
   const [generateStatus, setGenerateStatus] = useState("");
   const [userId, setUserId] = useState("");
@@ -37,7 +37,7 @@ export default function AdminPatentPilotPage() {
 
   return (
     <div className="p-6 max-w-2xl space-y-6">
-      <h1 className="text-2xl font-semibold">Patent Pilot Admin</h1>
+      <h1 className="text-2xl font-semibold">Patentbrief Admin</h1>
 
       <Card className="p-6 space-y-4">
         <div>
