@@ -1,169 +1,162 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { CheckCircle, Mail, FileSearch, TrendingUp, FileCheck, Inbox } from "lucide-react";
 import { ModeToggle } from "@/components/theme/theme-toggle";
 
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-background">
-      {/* Nav */}
-      <nav className="border-b bg-background/95 backdrop-blur sticky top-0 z-50">
+
+      {/* Masthead nav — navy, editorial */}
+      <header className="bg-primary text-primary-foreground">
         <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <FileSearch className="size-5 text-accent" />
-            <span className="font-semibold text-foreground">Patent Pilot</span>
-          </div>
-          <div className="flex items-center gap-3">
+          <Link href="/" className="font-serif text-xl font-semibold tracking-tight text-primary-foreground">
+            Patentbrief
+          </Link>
+          <nav className="flex items-center gap-6">
             <ModeToggle />
             <Link
               href="/login"
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+              className="text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors"
             >
               Anmelden
             </Link>
             <Button
               size="sm"
-              className="bg-accent hover:bg-accent/90 text-accent-foreground"
+              className="bg-accent text-accent-foreground hover:bg-accent/90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-primary"
               asChild
             >
               <Link href="/signup">Jetzt abonnieren</Link>
             </Button>
-          </div>
+          </nav>
         </div>
-      </nav>
+        {/* Amber rule under masthead */}
+        <div className="h-px bg-accent/60" />
+      </header>
 
-      {/* Hero */}
-      <section className="max-w-5xl mx-auto px-6 py-20 text-center">
-        <div className="inline-flex items-center gap-2 text-sm font-medium text-accent mb-4 uppercase tracking-wide">
-          <Inbox className="size-4" />
-          <span>Jeden Montag in Ihrem Postfach</span>
-        </div>
-        <h1 className="text-4xl font-semibold tracking-tight text-foreground mb-6 max-w-3xl mx-auto leading-tight">
+      {/* Hero — editorial, typography-led */}
+      <section className="max-w-3xl mx-auto px-6 py-20">
+        <p className="text-xs font-sans uppercase tracking-widest text-muted-foreground mb-6">
+          Jeden Montag um 8 Uhr &middot; Patent-Intelligence für den Mittelstand
+        </p>
+        <h1 className="font-serif text-5xl font-semibold leading-tight text-foreground mb-8 max-w-2xl">
           4 von 5 Patenten verfallen vor Ablauf. Wir zeigen Ihnen, welche Sie nutzen können.
         </h1>
-        <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-10 leading-relaxed">
-          Patent Pilot ist ein wöchentlicher E-Mail-Newsletter für den deutschen Mittelstand.
-          Jeden Montag um 8 Uhr: welche Patente in Ihrem Technologiefeld frei geworden oder
-          verfügbar sind, auf Deutsch, ohne Patentabteilung.
+        <p className="text-lg text-muted-foreground leading-relaxed mb-10 max-w-xl">
+          Patentbrief ist ein wöchentlicher E-Mail-Newsletter. Jeden Montag erfahren Sie, welche Patente
+          in Ihrem Technologiefeld frei geworden oder verfügbar sind. Auf Deutsch. Ohne Patentabteilung.
         </p>
-        <div className="flex gap-4 justify-center flex-wrap">
+        <div className="flex items-center gap-6 flex-wrap">
           <Button
             size="lg"
-            className="bg-accent hover:bg-accent/90 text-accent-foreground"
+            className="bg-accent text-accent-foreground hover:bg-accent/90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 px-8"
             asChild
           >
             <Link href="/signup">Jetzt abonnieren</Link>
           </Button>
-          <Button size="lg" variant="outline" asChild>
-            <Link href="/pricing">Preise ansehen</Link>
-          </Button>
+          <span className="text-sm text-muted-foreground">
+            2 Briefings kostenlos. Keine Kreditkarte.
+          </span>
         </div>
-        <p className="text-xs text-muted-foreground mt-4">
-          2 Briefings kostenlos. Keine Kreditkarte. Jederzeit kündbar.
-        </p>
       </section>
 
-      {/* How it works */}
-      <section className="bg-muted/30 py-16">
-        <div className="max-w-5xl mx-auto px-6">
-          <h2 className="text-2xl font-semibold text-center mb-2">
-            Was Sie jeden Montag erhalten
-          </h2>
-          <p className="text-center text-muted-foreground mb-12 text-sm">
-            Eine E-Mail. 10 Minuten lesen. Kein Login, kein Dashboard.
-          </p>
-          <div className="grid md:grid-cols-3 gap-8">
-            {[
-              {
-                icon: FileCheck,
-                title: "Freie Patente",
-                body: "Welche Patente in Ihrem Feld sind diese Woche in die Public Domain übergegangen und ab sofort frei verwendbar.",
-              },
-              {
-                icon: TrendingUp,
-                title: "Patente zum Erwerb",
-                body: "Konzerne und Start-ups, die Patente in Ihrem Bereich zum Kauf oder zur Lizenzierung anbieten.",
-              },
-              {
-                icon: Mail,
-                title: "Strategie-Impuls",
-                body: "Eine konkrete Handlungsempfehlung: sofort prüfen, Anwalt einschalten, oder beobachten.",
-              },
-            ].map(({ icon: Icon, title, body }) => (
-              <Card key={title} className="p-6 border-l-4 border-l-accent">
-                <Icon className="size-8 text-accent mb-4" />
-                <h3 className="font-semibold mb-2">{title}</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">{body}</p>
-              </Card>
-            ))}
+      {/* Amber divider */}
+      <div className="max-w-5xl mx-auto px-6">
+        <div className="h-px bg-border" />
+      </div>
+
+      {/* What's in every briefing — editorial 3-column text */}
+      <section className="max-w-5xl mx-auto px-6 py-16">
+        <h2 className="font-serif text-2xl font-semibold text-foreground mb-2">
+          Was Sie jeden Montag erhalten
+        </h2>
+        <p className="text-sm text-muted-foreground mb-12">
+          Eine E-Mail. 10 Minuten lesen. Kein Login, kein Dashboard.
+        </p>
+        <div className="grid md:grid-cols-3 gap-10 md:divide-x divide-border">
+          <div className="md:pr-10">
+            <p className="text-xs uppercase tracking-widest text-accent font-sans mb-3">Freie Patente</p>
+            <p className="text-foreground font-medium mb-2">In die Public Domain übergegangen</p>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              Welche Patente in Ihrem Feld sind diese Woche abgelaufen und ab sofort frei verwendbar,
+              ohne Lizenzgebühren und ohne Anmeldung.
+            </p>
+          </div>
+          <div className="md:px-10">
+            <p className="text-xs uppercase tracking-widest text-accent font-sans mb-3">Patente zum Erwerb</p>
+            <p className="text-foreground font-medium mb-2">Lizenzierbar oder käuflich</p>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              Konzerne und Start-ups, die Schutzrechte in Ihrem Bereich aktiv zum Kauf oder
+              zur Lizenzierung anbieten, mit Kontaktweg.
+            </p>
+          </div>
+          <div className="md:pl-10">
+            <p className="text-xs uppercase tracking-widest text-accent font-sans mb-3">Strategie-Impuls</p>
+            <p className="text-foreground font-medium mb-2">Eine Empfehlung pro Woche</p>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              Sofort prüfen, Patentanwalt einschalten oder beobachten. Konkret,
+              nicht akademisch.
+            </p>
           </div>
         </div>
       </section>
 
-      {/* Why Mittelstand */}
+      {/* Divider */}
+      <div className="max-w-5xl mx-auto px-6">
+        <div className="h-px bg-border" />
+      </div>
+
+      {/* Positioning — editorial pull quote layout */}
       <section className="max-w-5xl mx-auto px-6 py-16">
-        <div className="grid md:grid-cols-2 gap-12 items-center">
+        <div className="grid md:grid-cols-2 gap-16 items-start">
           <div>
-            <h2 className="text-2xl font-semibold mb-4">
+            <h2 className="font-serif text-2xl font-semibold text-foreground mb-4">
               PatSnap gibt Ihnen 50.000 Treffer. Wir geben Ihnen die fünf, die zählen.
             </h2>
-            <p className="text-muted-foreground mb-6 leading-relaxed">
-              Enterprise-Patent-Tools setzen eine IP-Abteilung voraus und kosten fünfstellig im
-              Jahr. Patent Pilot ist gemacht für den Leiter Strategie ohne Patentexpertise und
-              ohne Zeit für Datenbankrecherche.
+            <p className="text-muted-foreground leading-relaxed mb-6">
+              Enterprise-Patent-Tools setzen eine IP-Abteilung voraus und kosten fünfstellig im Jahr.
+              Patentbrief ist gemacht für den Leiter Strategie ohne Patentexpertise und ohne Zeit
+              für Datenbankrecherche.
             </p>
-            <ul className="space-y-3">
+            <ul className="space-y-3 text-sm">
               {[
                 "Komplett auf Deutsch",
                 "Onboarding in 5 Minuten",
                 "Ab 249 EUR/Monat, kein Jahresvertrag",
                 "Kein Schulungsaufwand",
               ].map((f) => (
-                <li key={f} className="flex items-center gap-3 text-sm">
-                  <CheckCircle className="size-4 text-accent flex-shrink-0" />
+                <li key={f} className="flex items-start gap-3 text-foreground">
+                  <span className="text-accent mt-0.5 font-mono text-xs">+</span>
                   <span>{f}</span>
                 </li>
               ))}
             </ul>
           </div>
-          <Card className="p-8 bg-muted/30">
-            <div className="space-y-6">
-              <div>
-                <p className="text-3xl font-mono font-semibold text-foreground">199.264</p>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Neue Patente in der EU pro Jahr
-                </p>
-              </div>
-              <div>
-                <p className="text-3xl font-mono font-semibold text-foreground">83 %</p>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Verfallen vor Ablauf der 20-Jahres-Frist
-                </p>
-              </div>
-              <div>
-                <p className="text-3xl font-mono font-semibold text-foreground">0</p>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Mittelständler, die das systematisch beobachten
-                </p>
-              </div>
-            </div>
-          </Card>
+
+          {/* Pull quote — replaces the hero-metric block */}
+          <blockquote className="border-l-2 border-accent pl-8 py-2">
+            <p className="font-serif text-2xl font-semibold text-foreground leading-snug mb-6">
+              &ldquo;83 Prozent aller Patente verfallen, bevor sie die 20-Jahres-Frist erreichen.
+              Kaum ein Mittelständler beobachtet, was dabei frei wird.&rdquo;
+            </p>
+            <p className="text-xs text-muted-foreground uppercase tracking-widest">
+              Quelle: Europäisches Patentamt
+            </p>
+          </blockquote>
         </div>
       </section>
 
-      {/* CTA band */}
+      {/* CTA band — navy */}
       <section className="bg-primary text-primary-foreground py-16">
-        <div className="max-w-2xl mx-auto text-center px-6">
-          <h2 className="text-2xl font-semibold mb-4">
+        <div className="max-w-3xl mx-auto text-center px-6">
+          <h2 className="font-serif text-3xl font-semibold mb-4">
             Freie Patente. Jeden Montag. Auf Deutsch.
           </h2>
-          <p className="text-primary-foreground/80 mb-8">
+          <p className="text-primary-foreground/70 mb-8 text-lg">
             2 Briefings kostenlos. Keine Kreditkarte. Jederzeit kündbar.
           </p>
           <Button
             size="lg"
-            className="bg-accent hover:bg-accent/90 text-accent-foreground"
+            className="bg-accent text-accent-foreground hover:bg-accent/90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-primary px-10"
             asChild
           >
             <Link href="/signup">Jetzt abonnieren</Link>
@@ -171,20 +164,20 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="border-t py-8">
-        <div className="max-w-5xl mx-auto px-6 flex flex-col items-center gap-3 text-sm text-muted-foreground text-center">
+      {/* Footer — navy */}
+      <footer className="bg-primary border-t border-primary-foreground/10 py-10">
+        <div className="max-w-5xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-primary-foreground/50">
           <p>
-            Patent Pilot, BrainBytes Studio. Alle Angaben ohne Gewaehr. Keine Rechtsberatung.
+            Patentbrief ist ein Dienst von BrainBytes Studio. Alle Angaben ohne Gewähr. Keine Rechtsberatung.
           </p>
           <div className="flex items-center gap-6">
-            <Link href="/impressum" className="hover:text-foreground transition-colors">
+            <Link href="/impressum" className="hover:text-primary-foreground transition-colors">
               Impressum
             </Link>
-            <Link href="/datenschutz" className="hover:text-foreground transition-colors">
+            <Link href="/datenschutz" className="hover:text-primary-foreground transition-colors">
               Datenschutz
             </Link>
-            <Link href="/pricing" className="hover:text-foreground transition-colors">
+            <Link href="/pricing" className="hover:text-primary-foreground transition-colors">
               Preise
             </Link>
           </div>

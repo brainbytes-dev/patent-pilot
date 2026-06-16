@@ -46,11 +46,15 @@ All colors via `globals.css` tokens — never hardcoded hex in components.
 
 ## Section 3: Typography
 
-**Fonts:** Geist Sans (already installed) for all body text. No additional fonts needed — Geist is already distinctive and technical.
+**Fonts:**
+- **Wordmark + Headlines:** Source Serif 4 (`font-serif`, Google Fonts, weights 400/600) — newspaper masthead authority
+- **Body/UI:** Geist Sans (`font-sans`) — clean, technical, readable
+- **Data/Numbers:** Geist Mono (`font-mono`) — patent numbers, CPC codes, dates, amounts
 
-- Display/Hero: `font-sans font-semibold tracking-tight`
-- Body: `font-sans font-normal`
-- Data/Numbers: `font-mono` (Geist Mono, already installed) for patent numbers, dates, amounts
+- Display/Hero headlines: `font-serif font-semibold leading-tight`
+- Nav wordmark: `font-serif text-xl font-semibold tracking-tight`
+- Body copy: `font-sans font-normal`
+- Labels/eyebrows: `font-sans text-xs uppercase tracking-widest`
 - All German text: real Umlauts (ä/ö/ü), Swiss standard (ss not ß)
 
 **Scale (8px grid):**
