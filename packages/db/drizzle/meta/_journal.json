@@ -8,6 +8,27 @@
       "when": 1773438758760,
       "tag": "0000_familiar_madripoor",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1781684403194,
+      "tag": "0001_happy_vapor",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1781872905581,
+      "tag": "0002_nappy_purifiers",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1782113757452,
+      "tag": "0003_green_otto_octavius",
+      "breakpoints": true
     }
   ]
 }

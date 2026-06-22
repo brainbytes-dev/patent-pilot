@@ -3,270 +3,145 @@
 import { useState, useEffect } from "react"
 import { useSession } from "@/lib/auth-client"
 import { createPortalSession } from "@/lib/stripe"
+import { AppSidebar } from "@/components/app-sidebar"
+import { SiteHeader } from "@/components/site-header"
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Separator } from "@/components/ui/separator"
+import { CreditCard, ArrowUpCircle, ExternalLink } from "lucide-react"
+import { UpgradeModal } from "@/components/upgrade-modal"
 
-interface Plan {
-  id: string
-  name: string
-  description: string
-  price: number
-  interval: "month" | "year"
-  features: string[]
+type Tier = "free" | "starter" | "pro"
+
+const TIER_LABELS: Record<Tier, string> = {
+  free: "Free",
+  starter: "Starter",
+  pro: "Pro",
 }
 
-const plans: Plan[] = [
-  {
-    id: "free",
-    name: "Free",
-    description: "Get started with basic features",
-    price: 0,
-    interval: "month",
-    features: [
-      "Up to 3 projects",
-      "Basic analytics",
-      "Community support",
-      "1 GB storage",
-    ],
-  },
-  {
-    id: "pro",
-    name: "Pro",
-    description: "Perfect for growing teams",
-    price: 29,
-    interval: "month",
-    features: [
-      "Unlimited projects",
-      "Advanced analytics",
-      "Priority support",
-      "100 GB storage",
-      "Team collaboration",
-    ],
-  },
-  {
-    id: "enterprise",
-    name: "Enterprise",
-    description: "For large organizations",
-    price: 99,
-    interval: "month",
-    features: [
-      "Everything in Pro",
-      "Custom integrations",
-      "Dedicated support",
-      "Unlimited storage",
-      "SSO & advanced security",
-      "SLA guarantee",
-    ],
-  },
-]
+const TIER_DESCRIPTIONS: Record<Tier, string> = {
+  free: "Wöchentlicher General Brief, Suche letzte 30 Tage, 1 Watchlist",
+  starter: "Vollständiger Archiv-Zugriff, unbegrenzte Watchlists, personalisierter Brief",
+  pro: "Alles aus Starter + Lookahead-Alerts 30 / 60 / 90 Tage im Voraus",
+}
 
 export default function BillingPage() {
   const { data: session } = useSession()
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [currentPlan, setCurrentPlan] = useState<string>("free")
+  const [tier, setTier] = useState<Tier>("free")
+  const [loadingPortal, setLoadingPortal] = useState(false)
+  const [upgradeOpen, setUpgradeOpen] = useState(false)
 
   useEffect(() => {
-    const fetchCurrentPlan = async () => {
-      if (!session?.user?.email) return
+    fetch("/api/user/tier")
+      .then((r) => r.json())
+      .then((d: { tier: Tier }) => setTier(d.tier))
+      .catch(() => {})
+  }, [])
 
-      try {
-        const res = await fetch("/api/user/subscription")
-        if (!res.ok) return
-        const { status } = await res.json()
-
-        if (status === "active" || status === "trialing") {
-          setCurrentPlan("pro")
-        } else {
-          setCurrentPlan("free")
-        }
-      } catch (err) {
-        console.error("Error fetching subscription:", err)
-        setCurrentPlan("free")
-      }
-    }
-
-    fetchCurrentPlan()
-  }, [session?.user?.email])
-
-  const handleManageSubscription = async () => {
-    setIsLoading(true)
-    setError(null)
+  async function openPortal() {
+    setLoadingPortal(true)
     try {
       const { url } = await createPortalSession()
-      if (url) {
-        window.location.href = url
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to open customer portal")
+      window.location.href = url
+    } catch (e) {
+      console.error(e)
     } finally {
-      setIsLoading(false)
+      setLoadingPortal(false)
     }
   }
 
   return (
-    <div className="space-y-8 px-4 py-4 md:px-6 md:py-6 lg:px-8 lg:py-8">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Billing & Plans</h1>
-        <p className="text-muted-foreground mt-2">Manage your subscription and billing information</p>
-      </div>
-
-      {/* Current Plan */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Current Plan</CardTitle>
-          <CardDescription>You are currently on the {currentPlan} plan</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="font-semibold text-lg capitalize">{currentPlan} Plan</p>
-              <p className="text-sm text-muted-foreground">
-                {currentPlan === "free"
-                  ? "Upgrade to unlock more features"
-                  : "Your subscription is active and renews monthly"}
-              </p>
-            </div>
-            <Badge variant="secondary" className="capitalize">
-              {currentPlan}
-            </Badge>
+    <SidebarProvider
+      style={{ "--sidebar-width": "calc(var(--spacing) * 72)", "--header-height": "calc(var(--spacing) * 12)" } as React.CSSProperties}
+    >
+      <AppSidebar variant="inset" />
+      <SidebarInset>
+        <SiteHeader />
+        <div className="p-6 lg:p-10 max-w-2xl w-full mx-auto space-y-8">
+          <div className="flex items-center gap-3">
+            <CreditCard className="size-5 text-accent" />
+            <h1 className="text-2xl font-semibold">Abonnement & Abrechnung</h1>
           </div>
 
-          <Separator />
-
-          {currentPlan !== "free" && (
-            <Button onClick={handleManageSubscription} disabled={isLoading}>
-              {isLoading ? "Loading..." : "Manage Subscription"}
-            </Button>
-          )}
-
-          {error && (
-            <div className="rounded-md bg-red-50 p-3 text-sm text-red-700">
-              {error}
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      <Separator />
-
-      {/* Plans Comparison */}
-      <div>
-        <h2 className="text-2xl font-bold tracking-tight mb-6">Compare Plans</h2>
-        <div className="grid gap-6 md:grid-cols-3">
-          {plans.map((plan) => (
-            <Card
-              key={plan.id}
-              className={`flex flex-col ${
-                plan.id === currentPlan ? "border-primary border-2" : ""
-              }`}
-            >
-              <CardHeader>
-                <div className="flex items-start justify-between">
-                  <div>
-                    <CardTitle>{plan.name}</CardTitle>
-                    <CardDescription>{plan.description}</CardDescription>
-                  </div>
-                  {plan.id === currentPlan && (
-                    <Badge variant="default">Current</Badge>
-                  )}
+          {/* Current plan */}
+          <div className="border rounded-none p-5 space-y-4">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <p className="font-semibold text-sm">Aktueller Plan</p>
+                  <Badge variant={tier === "free" ? "secondary" : "default"} className={tier !== "free" ? "bg-accent text-accent-foreground" : ""}>
+                    {TIER_LABELS[tier]}
+                  </Badge>
                 </div>
-              </CardHeader>
-              <CardContent className="flex-1 space-y-6">
-                <div>
-                  <p className="text-3xl font-bold">
-                    {plan.price === 0 ? "Free" : `$${plan.price}`}
+                <p className="text-sm text-muted-foreground">{TIER_DESCRIPTIONS[tier]}</p>
+              </div>
+
+              {tier !== "free" && (
+                <div className="text-right shrink-0">
+                  <p className="font-ibm-plex text-lg font-semibold">
+                    €{tier === "pro" ? "499" : "249"}
                   </p>
-                  {plan.price > 0 && (
-                    <p className="text-sm text-muted-foreground">
-                      per {plan.interval}
-                    </p>
-                  )}
+                  <p className="text-xs text-muted-foreground">/ Monat</p>
                 </div>
+              )}
+            </div>
 
-                <ul className="space-y-3">
-                  {plan.features.map((feature, idx) => (
-                    <li key={idx} className="flex items-center gap-2 text-sm">
-                      <svg
-                        className="h-4 w-4 text-green-600"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M5 13l4 4L19 7"
-                        />
-                      </svg>
-                      {feature}
-                    </li>
-                  ))}
-                </ul>
-
-                {plan.id !== currentPlan && plan.id !== "free" && (
-                  <Button className="w-full" disabled>
-                    Coming Soon
-                  </Button>
-                )}
-
-                {plan.id === currentPlan && plan.id !== "free" && (
+            <div className="flex gap-2 pt-1">
+              {tier === "free" && (
+                <Button
+                  size="sm"
+                  onClick={() => setUpgradeOpen(true)}
+                  className="gap-1.5 bg-accent hover:bg-accent/90 text-accent-foreground"
+                >
+                  <ArrowUpCircle className="size-4" />
+                  Upgraden
+                </Button>
+              )}
+              {tier === "starter" && (
+                <>
                   <Button
-                    variant="outline"
-                    className="w-full"
-                    onClick={handleManageSubscription}
-                    disabled={isLoading}
+                    size="sm"
+                    onClick={() => setUpgradeOpen(true)}
+                    className="gap-1.5 bg-accent hover:bg-accent/90 text-accent-foreground"
                   >
-                    {isLoading ? "Loading..." : "Manage"}
+                    <ArrowUpCircle className="size-4" />
+                    Auf Pro upgraden
                   </Button>
-                )}
+                  <Button size="sm" variant="outline" onClick={openPortal} disabled={loadingPortal} className="gap-1.5">
+                    <ExternalLink className="size-3.5" />
+                    {loadingPortal ? "Wird geladen…" : "Abo verwalten"}
+                  </Button>
+                </>
+              )}
+              {tier === "pro" && (
+                <Button size="sm" variant="outline" onClick={openPortal} disabled={loadingPortal} className="gap-1.5">
+                  <ExternalLink className="size-3.5" />
+                  {loadingPortal ? "Wird geladen…" : "Abo verwalten"}
+                </Button>
+              )}
+            </div>
+          </div>
 
-                {plan.id === "free" && currentPlan === "free" && (
-                  <Button disabled className="w-full">
-                    Current Plan
-                  </Button>
-                )}
-              </CardContent>
-            </Card>
-          ))}
+          {/* Account */}
+          <div className="border rounded-none p-5 space-y-3">
+            <p className="font-semibold text-sm">Kontoinformationen</p>
+            <div className="text-sm text-muted-foreground space-y-1">
+              <p>E-Mail: <span className="text-foreground">{session?.user.email ?? "—"}</span></p>
+              <p>Name: <span className="text-foreground">{session?.user.name ?? "—"}</span></p>
+            </div>
+          </div>
+
+          <p className="text-xs text-muted-foreground">
+            Zahlungen werden über Stripe verarbeitet. Kündigung jederzeit möglich, gilt zum Ende der Laufzeit.
+          </p>
         </div>
-      </div>
+      </SidebarInset>
 
-      <Separator />
-
-      {/* Billing History */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Billing History</CardTitle>
-          <CardDescription>View your past invoices and payments</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="text-center py-8">
-            <p className="text-muted-foreground">
-              No invoices yet. Upgrade to see your billing history.
-            </p>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Payment Methods */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Payment Methods</CardTitle>
-          <CardDescription>Manage your payment information</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="text-center py-8">
-            <p className="text-muted-foreground mb-4">
-              No payment methods added yet
-            </p>
-            <Button disabled>Add Payment Method</Button>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+      <UpgradeModal
+        open={upgradeOpen}
+        onClose={() => setUpgradeOpen(false)}
+        reason={tier === "starter" ? "Lookahead-Alerts mit Pro" : undefined}
+      />
+    </SidebarProvider>
   )
 }

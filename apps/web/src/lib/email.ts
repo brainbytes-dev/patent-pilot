@@ -74,33 +74,36 @@ export async function sendBriefingEmail({
   firstName,
   weekNumber,
   year,
-  htmlContent,
+  patents,
+  totalLapsedCount,
   briefingId,
 }: {
   to: string;
   firstName?: string;
   weekNumber: number;
   year: number;
-  htmlContent: string;
+  patents: import('@repo/email').BriefingPatent[];
+  totalLapsedCount: number;
   briefingId: string;
 }): Promise<string> {
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://patentpilot.de';
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://patentbrief.de';
   const dryRun = process.env.RESEND_DRY_RUN === 'true';
 
   if (DEMO_MODE || dryRun) {
-    console.log(`[EMAIL DRY_RUN] to=${to} briefingId=${briefingId}`);
+    console.log(`[EMAIL DRY_RUN] to=${to} briefingId=${briefingId} patents=${patents.length}`);
     return 'dry-run-message-id';
   }
 
   const { data, error } = await getResend().emails.send({
-    from: process.env.BRIEFING_FROM_EMAIL ?? 'briefing@patentpilot.de',
-    replyTo: process.env.BRIEFING_REPLY_TO ?? 'support@patentpilot.de',
+    from: process.env.BRIEFING_FROM_EMAIL ?? 'briefing@patentbrief.de',
+    replyTo: process.env.BRIEFING_REPLY_TO ?? 'support@patentbrief.de',
     to,
-    subject: `Ihr Patent-Briefing, KW ${weekNumber}/${year}`,
+    subject: `Patentbrief KW ${weekNumber}/${year}: ${patents.length} Patente in Ihrem Feld frei geworden`,
     react: React.createElement(BriefingEmail, {
       weekNumber,
       year,
-      briefingHtml: htmlContent,
+      patents,
+      totalLapsedCount,
       dashboardUrl: `${appUrl}/briefings`,
       watchlistUrl: `${appUrl}/watchlist`,
       unsubscribeUrl: `${appUrl}/api/unsubscribe?briefingId=${briefingId}`,

@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { getDb } from "@repo/db";
-import { briefings, watchlists, patents } from "@repo/db/schema";
-import { eq, count, desc } from "drizzle-orm";
+import { briefings, watchlists } from "@repo/db/schema";
+import { eq, count, desc, sql } from "drizzle-orm";
 import { headers } from "next/headers";
 
 export async function GET() {
@@ -22,14 +22,14 @@ export async function GET() {
         .where(eq(briefings.userId, userId))
         .orderBy(desc(briefings.createdAt))
         .limit(1),
-      db.select({ count: count() }).from(patents),
+      db.execute(sql`SELECT n_live_tup::bigint AS count FROM pg_stat_user_tables WHERE relname = 'patents'`),
     ]);
 
   return NextResponse.json({
     briefingsSent: briefingCountRows[0]?.count ?? 0,
     watchlistActive: watchlistRows[0]?.active ?? false,
     onboardingComplete: watchlistRows[0]?.onboardingComplete ?? false,
-    patentsInDb: patentCountRows[0]?.count ?? 0,
+    patentsInDb: Number((patentCountRows[0] as { count?: string } | undefined)?.count ?? 0),
     latestBriefingId: latestBriefingRows[0]?.id ?? null,
     latestBriefingWeek: latestBriefingRows[0]?.weekOf ?? null,
     industries: watchlistRows[0]?.industries ?? [],

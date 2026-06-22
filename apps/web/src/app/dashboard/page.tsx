@@ -62,7 +62,7 @@ export default function DashboardPage() {
         <div className="flex flex-1 flex-col p-6 gap-6">
           {/* Onboarding nudge */}
           {stats && !stats.onboardingComplete && (
-            <div className="rounded-lg border border-accent/30 bg-accent/5 p-4 flex items-center justify-between">
+            <div className="border border-accent/30 bg-accent/5 p-4 flex items-center justify-between">
               <p className="text-sm font-medium">
                 Richten Sie Ihre Watchlist ein, um wöchentliche Patent-Briefings zu erhalten.
               </p>

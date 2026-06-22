@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-const protectedRoutes = ['/dashboard', '/admin']
+const protectedRoutes = ['/dashboard', '/admin', '/pricing']
 const adminRoutes = ['/admin']
 
 export async function proxy(request: NextRequest) {

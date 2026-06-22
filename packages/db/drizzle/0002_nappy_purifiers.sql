@@ -1,0 +1,1 @@
+ALTER TABLE "patents" ALTER COLUMN "title" DROP NOT NULL;

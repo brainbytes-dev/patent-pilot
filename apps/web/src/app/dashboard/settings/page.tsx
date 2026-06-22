@@ -1,20 +1,16 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useSession } from "@/lib/auth-client"
 import { updateProfile, changePassword } from "@/lib/auth-client"
+import { AppSidebar } from "@/components/app-sidebar"
+import { SiteHeader } from "@/components/site-header"
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Separator } from "@/components/ui/separator"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
 
 export default function SettingsPage() {
   const { data: session } = useSession()
@@ -22,278 +18,271 @@ export default function SettingsPage() {
   const [isSaved, setIsSaved] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [formData, setFormData] = useState({
-    name: session?.user?.name || "",
+    name: "",
     currentPassword: "",
     newPassword: "",
     confirmPassword: "",
   })
 
-  const handleSaveProfile = async (e: React.FormEvent) => {
+  useEffect(() => {
+    if (session?.user?.name) setFormData((f) => ({ ...f, name: session.user.name ?? "" }))
+  }, [session])
+
+  function flash() {
+    setIsSaved(true)
+    setTimeout(() => setIsSaved(false), 2500)
+  }
+
+  async function handleSaveProfile(e: React.FormEvent) {
     e.preventDefault()
     setError(null)
     setIsLoading(true)
     try {
-      if (!formData.name.trim()) {
-        setError("Name cannot be empty")
-        return
-      }
-
+      if (!formData.name.trim()) { setError("Name darf nicht leer sein"); return }
       const result = await updateProfile({ name: formData.name })
-      if (result.error) {
-        setError(result.error)
-      } else {
-        setIsSaved(true)
-        setTimeout(() => setIsSaved(false), 2000)
-      }
+      if (result.error) setError(String(result.error))
+      else flash()
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to update profile")
+      setError(err instanceof Error ? err.message : "Fehler beim Speichern")
     } finally {
       setIsLoading(false)
     }
   }
 
-  const handleChangePassword = async (e: React.FormEvent) => {
+  async function handleChangePassword(e: React.FormEvent) {
     e.preventDefault()
     setError(null)
     setIsLoading(true)
     try {
-      if (!formData.currentPassword || !formData.newPassword) {
-        setError("All password fields are required")
-        return
-      }
-
-      if (formData.newPassword !== formData.confirmPassword) {
-        setError("New passwords do not match")
-        return
-      }
-
-      if (formData.newPassword.length < 8) {
-        setError("New password must be at least 8 characters")
-        return
-      }
-
-      const result = await changePassword({
-        currentPassword: formData.currentPassword,
-        newPassword: formData.newPassword,
-      })
-
-      if (result.error) {
-        setError(result.error)
-      } else {
-        setFormData({
-          ...formData,
-          currentPassword: "",
-          newPassword: "",
-          confirmPassword: "",
-        })
-        setIsSaved(true)
-        setTimeout(() => setIsSaved(false), 2000)
+      if (!formData.currentPassword || !formData.newPassword) { setError("Alle Felder ausfüllen"); return }
+      if (formData.newPassword !== formData.confirmPassword) { setError("Passwörter stimmen nicht überein"); return }
+      if (formData.newPassword.length < 8) { setError("Mindestens 8 Zeichen"); return }
+      const result = await changePassword({ currentPassword: formData.currentPassword, newPassword: formData.newPassword })
+      if (result.error) setError(String(result.error))
+      else {
+        setFormData((f) => ({ ...f, currentPassword: "", newPassword: "", confirmPassword: "" }))
+        flash()
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to change password")
+      setError(err instanceof Error ? err.message : "Fehler beim Ändern")
     } finally {
       setIsLoading(false)
     }
   }
 
   return (
-    <div className="space-y-8 px-4 py-4 md:px-6 md:py-6 lg:px-8 lg:py-8">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
-        <p className="text-muted-foreground mt-2">Manage your account settings and preferences</p>
-      </div>
+    <SidebarProvider
+      style={{ "--sidebar-width": "calc(var(--spacing) * 72)", "--header-height": "calc(var(--spacing) * 12)" } as React.CSSProperties}
+    >
+      <AppSidebar variant="inset" />
+      <SidebarInset>
+        <SiteHeader />
+        <div className="flex flex-col gap-8 p-6 lg:p-10 max-w-4xl w-full">
 
-      {error && (
-        <div className="rounded-md bg-red-50 p-3 text-sm text-red-700">
-          {error}
+          <div>
+            <h1 className="text-2xl font-semibold">Einstellungen</h1>
+            <p className="text-sm text-muted-foreground mt-1">Profil, Passwort und Benachrichtigungen verwalten</p>
+          </div>
+
+          {error && (
+            <div className="rounded border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+              {error}
+            </div>
+          )}
+          {isSaved && (
+            <div className="rounded border border-status-free/40 bg-status-free/10 px-4 py-3 text-sm text-status-free">
+              Änderungen gespeichert.
+            </div>
+          )}
+
+          <Tabs defaultValue="profil" className="w-full">
+            <TabsList className="mb-8">
+              <TabsTrigger value="profil">Profil</TabsTrigger>
+              <TabsTrigger value="sicherheit">Sicherheit</TabsTrigger>
+              <TabsTrigger value="benachrichtigungen">Benachrichtigungen</TabsTrigger>
+            </TabsList>
+
+            {/* Profil Tab */}
+            <TabsContent value="profil">
+              <div className="grid gap-10 lg:grid-cols-[1fr_2fr]">
+                <div>
+                  <h2 className="font-medium">Persönliche Angaben</h2>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Name und E-Mail-Adresse, die in deinem Konto hinterlegt sind.
+                  </p>
+                </div>
+                <form onSubmit={handleSaveProfile} className="space-y-5 bg-card border p-6">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="name">Name</Label>
+                    <Input
+                      id="name"
+                      value={formData.name}
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      disabled={isLoading}
+                      placeholder="Max Mustermann"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="email">E-Mail</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      value={session?.user?.email ?? ""}
+                      disabled
+                    />
+                    <p className="text-xs text-muted-foreground">E-Mail-Adresse kann nicht geändert werden.</p>
+                  </div>
+                  <div className="pt-2">
+                    <Button type="submit" size="sm" disabled={isLoading}>
+                      {isLoading ? "Wird gespeichert..." : "Speichern"}
+                    </Button>
+                  </div>
+                </form>
+              </div>
+            </TabsContent>
+
+            {/* Sicherheit Tab */}
+            <TabsContent value="sicherheit">
+              <div className="space-y-10">
+                {/* Passwort */}
+                <div className="grid gap-10 lg:grid-cols-[1fr_2fr]">
+                  <div>
+                    <h2 className="font-medium">Passwort</h2>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Wähle ein starkes Passwort mit mindestens 8 Zeichen.
+                    </p>
+                  </div>
+                  <form onSubmit={handleChangePassword} className="space-y-5 bg-card border p-6">
+                    <div className="space-y-1.5">
+                      <Label htmlFor="current-password">Aktuelles Passwort</Label>
+                      <Input
+                        id="current-password"
+                        type="password"
+                        value={formData.currentPassword}
+                        onChange={(e) => setFormData({ ...formData, currentPassword: e.target.value })}
+                        disabled={isLoading}
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="new-password">Neues Passwort</Label>
+                      <Input
+                        id="new-password"
+                        type="password"
+                        value={formData.newPassword}
+                        onChange={(e) => setFormData({ ...formData, newPassword: e.target.value })}
+                        disabled={isLoading}
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="confirm-password">Passwort bestätigen</Label>
+                      <Input
+                        id="confirm-password"
+                        type="password"
+                        value={formData.confirmPassword}
+                        onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                        disabled={isLoading}
+                      />
+                    </div>
+                    <div className="pt-2">
+                      <Button type="submit" size="sm" disabled={isLoading}>
+                        {isLoading ? "Wird geändert..." : "Passwort ändern"}
+                      </Button>
+                    </div>
+                  </form>
+                </div>
+
+                <Separator />
+
+                {/* Konto löschen */}
+                <div className="grid gap-10 lg:grid-cols-[1fr_2fr]">
+                  <div>
+                    <h2 className="font-medium text-destructive">Konto löschen</h2>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Alle Daten werden dauerhaft gelöscht. Diese Aktion kann nicht rückgängig gemacht werden.
+                    </p>
+                  </div>
+                  <div className="bg-card border border-destructive/30 p-6">
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Das Konto und alle zugehörigen Watchlists, Briefings und Einstellungen werden unwiderruflich entfernt.
+                    </p>
+                    <Button variant="destructive" size="sm" disabled>
+                      Konto löschen
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </TabsContent>
+
+            {/* Benachrichtigungen Tab */}
+            <TabsContent value="benachrichtigungen">
+              <div className="space-y-10">
+                <div className="grid gap-10 lg:grid-cols-[1fr_2fr]">
+                  <div>
+                    <h2 className="font-medium">E-Mail-Briefings</h2>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Wann und wie du Patent-Briefings per E-Mail erhältst.
+                    </p>
+                  </div>
+                  <div className="bg-card border divide-y">
+                    <div className="flex items-center justify-between px-6 py-4">
+                      <div>
+                        <p className="text-sm font-medium">General Brief</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">Wöchentlich, jeden Sonntag: die 5-7 wichtigsten neuen Patentstatus</p>
+                      </div>
+                      <input type="checkbox" defaultChecked className="h-4 w-4 accent-accent" aria-label="General Brief aktivieren" />
+                    </div>
+                    <div className="flex items-center justify-between px-6 py-4">
+                      <div>
+                        <p className="text-sm font-medium">Personalisierter Brief</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">Basierend auf deinen Watchlists, Starter &amp; Pro</p>
+                      </div>
+                      <input type="checkbox" defaultChecked className="h-4 w-4 accent-accent" aria-label="Personalisierter Brief aktivieren" />
+                    </div>
+                    <div className="flex items-center justify-between px-6 py-4">
+                      <div>
+                        <p className="text-sm font-medium">Lookahead-Alerts</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">Ablaufende Patente 30/60/90 Tage im Voraus, nur Pro</p>
+                      </div>
+                      <input type="checkbox" className="h-4 w-4 accent-accent" aria-label="Lookahead-Alerts aktivieren" />
+                    </div>
+                  </div>
+                </div>
+
+                <Separator />
+
+                <div className="grid gap-10 lg:grid-cols-[1fr_2fr]">
+                  <div>
+                    <h2 className="font-medium">System-Meldungen</h2>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Kontoereignisse wie Zahlungen oder Passwortänderungen.
+                    </p>
+                  </div>
+                  <div className="bg-card border divide-y">
+                    <div className="flex items-center justify-between px-6 py-4">
+                      <div>
+                        <p className="text-sm font-medium">Zahlungsbestätigungen</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">Automatisch bei jedem Rechnungseingang</p>
+                      </div>
+                      <input type="checkbox" defaultChecked disabled className="h-4 w-4 opacity-50" aria-label="Zahlungsbestätigungen (immer aktiv)" />
+                    </div>
+                    <div className="flex items-center justify-between px-6 py-4">
+                      <div>
+                        <p className="text-sm font-medium">Sicherheitshinweise</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">Login von neuem Gerät, Passwortänderung</p>
+                      </div>
+                      <input type="checkbox" defaultChecked disabled className="h-4 w-4 opacity-50" aria-label="Sicherheitshinweise (immer aktiv)" />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex justify-end">
+                  <Button size="sm">Einstellungen speichern</Button>
+                </div>
+              </div>
+            </TabsContent>
+          </Tabs>
         </div>
-      )}
-
-      {/* Profile Section */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Profile</CardTitle>
-          <CardDescription>Update your profile information</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSaveProfile} className="space-y-6">
-            <div className="grid gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="name">Full Name</Label>
-                <Input
-                  id="name"
-                  placeholder="John Doe"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  disabled={isLoading}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="john@example.com"
-                  value={session?.user?.email || ""}
-                  disabled
-                />
-                <p className="text-xs text-muted-foreground">Email cannot be changed</p>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="timezone">Timezone</Label>
-                <Select defaultValue="utc">
-                  <SelectTrigger id="timezone" disabled={isLoading}>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="utc">UTC</SelectItem>
-                    <SelectItem value="est">Eastern Time</SelectItem>
-                    <SelectItem value="cst">Central Time</SelectItem>
-                    <SelectItem value="mst">Mountain Time</SelectItem>
-                    <SelectItem value="pst">Pacific Time</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            <Button type="submit" disabled={isLoading}>
-              {isLoading ? "Saving..." : "Save Changes"}
-            </Button>
-            {isSaved && (
-              <p className="text-sm text-green-600">Profile updated successfully</p>
-            )}
-          </form>
-        </CardContent>
-      </Card>
-
-      <Separator />
-
-      {/* Password Section */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Password</CardTitle>
-          <CardDescription>Change your password to keep your account secure</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleChangePassword} className="space-y-6">
-            <div className="grid gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="current-password">Current Password</Label>
-                <Input
-                  id="current-password"
-                  type="password"
-                  placeholder="Enter your current password"
-                  value={formData.currentPassword}
-                  onChange={(e) => setFormData({ ...formData, currentPassword: e.target.value })}
-                  disabled={isLoading}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="new-password">New Password</Label>
-                <Input
-                  id="new-password"
-                  type="password"
-                  placeholder="Enter your new password"
-                  value={formData.newPassword}
-                  onChange={(e) => setFormData({ ...formData, newPassword: e.target.value })}
-                  disabled={isLoading}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="confirm-password">Confirm Password</Label>
-                <Input
-                  id="confirm-password"
-                  type="password"
-                  placeholder="Confirm your new password"
-                  value={formData.confirmPassword}
-                  onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-                  disabled={isLoading}
-                />
-              </div>
-            </div>
-
-            <Button type="submit" disabled={isLoading}>
-              {isLoading ? "Updating..." : "Update Password"}
-            </Button>
-            {isSaved && (
-              <p className="text-sm text-green-600">Password updated successfully</p>
-            )}
-          </form>
-        </CardContent>
-      </Card>
-
-      <Separator />
-
-      {/* Preferences Section */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Preferences</CardTitle>
-          <CardDescription>Manage your notification and privacy preferences</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form className="space-y-6">
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-medium">Email Notifications</p>
-                  <p className="text-sm text-muted-foreground">
-                    Receive email updates about your account
-                  </p>
-                </div>
-                <input type="checkbox" defaultChecked className="h-4 w-4" />
-              </div>
-
-              <Separator />
-
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-medium">Marketing Emails</p>
-                  <p className="text-sm text-muted-foreground">
-                    Receive emails about new features and updates
-                  </p>
-                </div>
-                <input type="checkbox" className="h-4 w-4" />
-              </div>
-
-              <Separator />
-
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-medium">Two-Factor Authentication</p>
-                  <p className="text-sm text-muted-foreground">
-                    Add an extra layer of security to your account
-                  </p>
-                </div>
-                <Button variant="outline" size="sm" disabled>
-                  Configure
-                </Button>
-              </div>
-            </div>
-          </form>
-        </CardContent>
-      </Card>
-
-      <Separator />
-
-      {/* Danger Zone */}
-      <Card className="border-red-200 bg-red-50">
-        <CardHeader>
-          <CardTitle className="text-red-700">Danger Zone</CardTitle>
-          <CardDescription>Actions that cannot be undone</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <p className="text-sm text-red-700">
-            Deleting your account will permanently remove all your data. This action cannot be undone.
-          </p>
-          <Button variant="destructive" disabled>
-            Delete Account
-          </Button>
-        </CardContent>
-      </Card>
-    </div>
+      </SidebarInset>
+    </SidebarProvider>
   )
 }

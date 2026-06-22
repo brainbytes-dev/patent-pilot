@@ -31,3 +31,5 @@ Thumbs.db
 *.tsbuildinfo
 .claude/worktrees/
 templates-mobile/
+.vercel
+.env*.local

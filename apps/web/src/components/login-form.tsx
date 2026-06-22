@@ -18,8 +18,8 @@ import * as Sentry from "@sentry/nextjs"
 import { DEMO_MODE } from "@/lib/demo-mode"
 
 const loginSchema = z.object({
-  email: z.string().email("Invalid email address"),
-  password: z.string().min(8, "Password must be at least 8 characters"),
+  email: z.string().email("Bitte geben Sie eine gültige E-Mail-Adresse ein."),
+  password: z.string().min(8, "Das Passwort muss mindestens 8 Zeichen lang sein."),
 })
 
 type LoginFormData = z.infer<typeof loginSchema>
@@ -62,7 +62,7 @@ export function LoginForm({
           },
           onError: (ctx) => {
             setError("email", {
-              message: ctx.error.message || "Login failed",
+              message: ctx.error.message || "Anmeldung fehlgeschlagen.",
             })
             Sentry.captureException(ctx.error, {
               tags: { form: "login" },
@@ -73,7 +73,7 @@ export function LoginForm({
     } catch (err) {
       Sentry.captureException(err, { tags: { form: "login" } })
       setError("email", {
-        message: err instanceof Error ? err.message : "An error occurred",
+        message: err instanceof Error ? err.message : "Ein Fehler ist aufgetreten.",
       })
     }
   }
@@ -81,40 +81,33 @@ export function LoginForm({
   return (
     <form onSubmit={handleSubmit(onSubmit)} className={cn("flex flex-col gap-6", className)} {...props}>
       <FieldGroup>
-        <div className="flex flex-col items-center gap-1 text-center">
-          <h1 className="text-2xl font-bold">Login to your account</h1>
-          <p className="text-sm text-balance text-muted-foreground">
-            Enter your email below to login to your account
-          </p>
-        </div>
-
-        {errors.email && (
-          <div className="rounded-md bg-red-50 p-3 text-sm text-red-700">
+        {errors.email && !errors.password && (
+          <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
             {errors.email.message}
           </div>
         )}
 
         <Field>
-          <FieldLabel htmlFor="email">Email</FieldLabel>
+          <FieldLabel htmlFor="email">E-Mail-Adresse</FieldLabel>
           <Input
             id="email"
             type="email"
-            placeholder="m@example.com"
+            placeholder="name@firma.de"
             {...register("email")}
             disabled={isSubmitting}
           />
           {errors.email && (
-            <p className="text-sm text-red-700">{errors.email.message}</p>
+            <p className="text-sm text-destructive">{errors.email.message}</p>
           )}
         </Field>
         <Field>
           <div className="flex items-center">
-            <FieldLabel htmlFor="password">Password</FieldLabel>
+            <FieldLabel htmlFor="password">Passwort</FieldLabel>
             <a
               href="/forgot-password"
-              className="ml-auto text-sm underline-offset-4 hover:underline"
+              className="ml-auto text-sm text-muted-foreground underline-offset-4 hover:underline hover:text-foreground transition-colors"
             >
-              Forgot your password?
+              Passwort vergessen?
             </a>
           </div>
           <Input
@@ -124,35 +117,33 @@ export function LoginForm({
             disabled={isSubmitting}
           />
           {errors.password && (
-            <p className="text-sm text-red-700">{errors.password.message}</p>
+            <p className="text-sm text-destructive">{errors.password.message}</p>
           )}
         </Field>
         <Field>
-          <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? "Logging in..." : "Login"}
+          <Button
+            type="submit"
+            disabled={isSubmitting}
+            className="w-full bg-primary text-primary-foreground hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          >
+            {isSubmitting ? "Wird angemeldet ..." : "Anmelden"}
           </Button>
         </Field>
         {DEMO_MODE && (
           <Field>
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t" />
+                <span className="w-full border-t border-border" />
               </div>
               <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-background px-2 text-muted-foreground">Or</span>
+                <span className="bg-background px-2 text-muted-foreground">oder</span>
               </div>
             </div>
-            <Button type="button" variant="outline" onClick={handleDemoLogin}>
-              Try Demo
+            <Button type="button" variant="outline" onClick={handleDemoLogin} className="w-full">
+              Demo ausprobieren
             </Button>
           </Field>
         )}
-        <FieldDescription className="text-center">
-          Don&apos;t have an account?{" "}
-          <a href="/signup" className="underline underline-offset-4">
-            Sign up
-          </a>
-        </FieldDescription>
       </FieldGroup>
     </form>
   )

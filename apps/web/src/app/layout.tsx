@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Source_Serif_4 } from "next/font/google";
+import { Geist, Geist_Mono, Source_Serif_4, IBM_Plex_Sans } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme/theme-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -18,15 +18,21 @@ const geistMono = Geist_Mono({
 const sourceSerif = Source_Serif_4({
   variable: "--font-serif",
   subsets: ["latin"],
+  weight: ["400", "600", "700"],
+});
+
+const ibmPlexSans = IBM_Plex_Sans({
+  variable: "--font-ibm-plex-css",
+  subsets: ["latin"],
   weight: ["400", "600"],
 });
 
 export const metadata: Metadata = {
   title: {
-    default: process.env.NEXT_PUBLIC_APP_NAME || "SaaS Platform",
-    template: `%s | ${process.env.NEXT_PUBLIC_APP_NAME || "SaaS Platform"}`,
+    default: "Patentbrief",
+    template: "%s | Patentbrief",
   },
-  description: "KI-kuratierte Patent-Briefings fuer den deutschen Mittelstand. Jede Woche: welche Patente in Ihrem Technologiefeld frei geworden sind.",
+  description: "KI-kuratierte Patent-Briefings für den deutschen Mittelstand. Jeden Montag: welche Patente in Ihrem Technologiefeld frei geworden sind.",
 };
 
 export default function RootLayout({
@@ -35,8 +41,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className={`${geistSans.variable} ${geistMono.variable} ${sourceSerif.variable} antialiased`}>
+    <html lang="de" suppressHydrationWarning>
+      <body className={`${geistSans.variable} ${geistMono.variable} ${sourceSerif.variable} ${ibmPlexSans.variable} antialiased`}>
         <PostHogProvider>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
             <TooltipProvider>

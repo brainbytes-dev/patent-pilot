@@ -157,8 +157,8 @@ export class EpoClient {
 
 export function getEpoClient(): EpoClient {
   return new EpoClient({
-    clientId: process.env.EPO_CLIENT_ID ?? "",
-    clientSecret: process.env.EPO_CLIENT_SECRET ?? "",
-    dryRun: process.env.EPO_DRY_RUN === "true" || !process.env.EPO_CLIENT_ID,
+    clientId: process.env.EPO_OPS_CLIENT_ID ?? process.env.EPO_CLIENT_ID ?? "",
+    clientSecret: process.env.EPO_OPS_CLIENT_SECRET ?? process.env.EPO_CLIENT_SECRET ?? "",
+    dryRun: process.env.EPO_DRY_RUN === "true" || !process.env.EPO_OPS_CLIENT_ID,
   });
 }

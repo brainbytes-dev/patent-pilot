@@ -1,19 +1,11 @@
 import Link from "next/link"
 import { LoginForm } from "@/components/login-form"
-import { ModeToggle } from "@/components/theme/theme-toggle"
+import { LandingHeader } from "@/components/landing-header"
 
 export default function LoginPage() {
   return (
     <div className="min-h-svh flex flex-col">
-      <header className="bg-primary text-primary-foreground">
-        <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
-          <Link href="/" className="font-serif text-xl font-semibold tracking-tight text-primary-foreground">
-            Patentbrief
-          </Link>
-          <ModeToggle />
-        </div>
-        <div className="h-px bg-accent/60" />
-      </header>
+      <LandingHeader minimal />
 
       <div className="flex flex-1 items-center justify-center px-6 py-16">
         <div className="w-full max-w-sm">

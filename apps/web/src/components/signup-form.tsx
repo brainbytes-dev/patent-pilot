@@ -19,13 +19,13 @@ import { sendWelcomeEmail } from "@/lib/email"
 
 const signupSchema = z
   .object({
-    name: z.string().min(2, "Name must be at least 2 characters"),
-    email: z.string().email("Invalid email address"),
-    password: z.string().min(8, "Password must be at least 8 characters"),
+    name: z.string().min(2, "Name muss mindestens 2 Zeichen lang sein."),
+    email: z.string().email("Bitte geben Sie eine gültige E-Mail-Adresse ein."),
+    password: z.string().min(8, "Das Passwort muss mindestens 8 Zeichen lang sein."),
     confirmPassword: z.string(),
   })
   .refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords do not match",
+    message: "Die Passwörter stimmen nicht überein.",
     path: ["confirmPassword"],
   })
 
@@ -55,7 +55,6 @@ export function SignupForm({
         },
         {
           onSuccess: async () => {
-            // Send welcome email
             try {
               await sendWelcomeEmail(data.name, data.email)
             } catch (err) {
@@ -66,7 +65,7 @@ export function SignupForm({
           },
           onError: (ctx) => {
             setError("email", {
-              message: ctx.error.message || "Sign up failed",
+              message: ctx.error.message || "Registrierung fehlgeschlagen.",
             })
             Sentry.captureException(ctx.error, {
               tags: { form: "signup" },
@@ -77,7 +76,7 @@ export function SignupForm({
     } catch (err) {
       Sentry.captureException(err, { tags: { form: "signup" } })
       setError("email", {
-        message: err instanceof Error ? err.message : "An error occurred",
+        message: err instanceof Error ? err.message : "Ein Fehler ist aufgetreten.",
       })
     }
   }
@@ -85,88 +84,77 @@ export function SignupForm({
   return (
     <form onSubmit={handleSubmit(onSubmit)} className={cn("flex flex-col gap-6", className)} {...props}>
       <FieldGroup>
-        <div className="flex flex-col items-center gap-1 text-center">
-          <h1 className="text-2xl font-bold">Create your account</h1>
-          <p className="text-sm text-balance text-muted-foreground">
-            Fill in the form below to create your account
-          </p>
-        </div>
-
-        {errors.email && (
-          <div className="rounded-md bg-red-50 p-3 text-sm text-red-700">
+        {errors.email && !errors.name && !errors.password && !errors.confirmPassword && (
+          <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
             {errors.email.message}
           </div>
         )}
 
         <Field>
-          <FieldLabel htmlFor="name">Full Name</FieldLabel>
+          <FieldLabel htmlFor="name">Vollständiger Name</FieldLabel>
           <Input
             id="name"
             type="text"
-            placeholder="John Doe"
+            placeholder="Max Mustermann"
             {...register("name")}
             disabled={isSubmitting}
           />
           {errors.name && (
-            <p className="text-sm text-red-700">{errors.name.message}</p>
+            <p className="text-sm text-destructive">{errors.name.message}</p>
           )}
         </Field>
         <Field>
-          <FieldLabel htmlFor="email">Email</FieldLabel>
+          <FieldLabel htmlFor="email">E-Mail-Adresse</FieldLabel>
           <Input
             id="email"
             type="email"
-            placeholder="m@example.com"
+            placeholder="name@firma.de"
             {...register("email")}
             disabled={isSubmitting}
           />
-          <FieldDescription>
-            We&apos;ll use this to contact you. We will not share your email
-            with anyone else.
+          <FieldDescription className="text-muted-foreground">
+            Hierüber erhalten Sie Ihr wöchentliches Briefing.
           </FieldDescription>
           {errors.email && (
-            <p className="text-sm text-red-700">{errors.email.message}</p>
+            <p className="text-sm text-destructive">{errors.email.message}</p>
           )}
         </Field>
         <Field>
-          <FieldLabel htmlFor="password">Password</FieldLabel>
+          <FieldLabel htmlFor="password">Passwort</FieldLabel>
           <Input
             id="password"
             type="password"
             {...register("password")}
             disabled={isSubmitting}
           />
-          <FieldDescription>
-            Must be at least 8 characters long.
+          <FieldDescription className="text-muted-foreground">
+            Mindestens 8 Zeichen.
           </FieldDescription>
           {errors.password && (
-            <p className="text-sm text-red-700">{errors.password.message}</p>
+            <p className="text-sm text-destructive">{errors.password.message}</p>
           )}
         </Field>
         <Field>
-          <FieldLabel htmlFor="confirm-password">Confirm Password</FieldLabel>
+          <FieldLabel htmlFor="confirm-password">Passwort bestätigen</FieldLabel>
           <Input
             id="confirm-password"
             type="password"
             {...register("confirmPassword")}
             disabled={isSubmitting}
           />
-          <FieldDescription>Please confirm your password.</FieldDescription>
           {errors.confirmPassword && (
-            <p className="text-sm text-red-700">{errors.confirmPassword.message}</p>
+            <p className="text-sm text-destructive">{errors.confirmPassword.message}</p>
           )}
         </Field>
         <Field>
-          <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? "Creating Account..." : "Create Account"}
+          <Button
+            type="submit"
+            disabled={isSubmitting}
+            className="w-full bg-accent text-accent-foreground hover:bg-accent/90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          >
+            {isSubmitting ? "Konto wird erstellt ..." : "Kostenlos starten"}
           </Button>
         </Field>
-        <FieldDescription className="text-center">
-          Already have an account?{" "}
-          <a href="/login" className="underline underline-offset-4">
-            Sign in
-          </a>
-        </FieldDescription>
       </FieldGroup>
     </form>
   )

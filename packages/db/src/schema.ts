@@ -10,7 +10,18 @@ import {
   index,
   integer,
   date,
+  customType,
 } from "drizzle-orm/pg-core";
+
+const bytea = customType<{ data: Buffer }>({
+  dataType() {
+    return "bytea";
+  },
+  fromDriver(value: unknown) {
+    if (Buffer.isBuffer(value)) return value;
+    return Buffer.from(value as string, "hex");
+  },
+});
 
 // ─── Users ──────────────────────────────────────────────────────────
 export const users = pgTable("users", {
@@ -170,13 +181,14 @@ export const patents = pgTable(
   {
     id: uuid("id").primaryKey().defaultRandom(),
     patentNumber: text("patent_number").notNull().unique(),
-    title: text("title").notNull(),
+    title: text("title"), // null = stub (not yet enriched via OPS API)
     titleDe: text("title_de"),
     abstractEn: text("abstract_en"),
     abstractDe: text("abstract_de"),
     filingDate: date("filing_date"),
     grantDate: date("grant_date"),
-    expiryDate: date("expiry_date"),
+    expiryDate: date("expiry_date"),       // theoretisches 20-Jahres-Maximum (filing + 20y)
+    lapsedAt: date("lapsed_at"),           // echtes Erlöschensdatum (PG25-Event aus INPADOC)
     owner: text("owner"),
     cpcCodes: text("cpc_codes").array().default([]),
     // status: active | lapsed | for_sale | assigned
@@ -191,6 +203,7 @@ export const patents = pgTable(
     index("idx_patents_number").on(table.patentNumber),
     index("idx_patents_status").on(table.status),
     index("idx_patents_expiry").on(table.expiryDate),
+    index("idx_patents_lapsed_at").on(table.lapsedAt),
   ]
 );
 
@@ -222,8 +235,8 @@ export const watchlists = pgTable(
     id: uuid("id").primaryKey().defaultRandom(),
     userId: uuid("user_id")
       .notNull()
-      .references(() => users.id, { onDelete: "cascade" })
-      .unique(),
+      .references(() => users.id, { onDelete: "cascade" }),
+    name: text("name"),
     // industries: maschinenbau | chemie | medtech | elektro | automotive
     industries: text("industries").array().default([]),
     keywords: text("keywords").array().default([]),
@@ -292,6 +305,24 @@ export const briefingPatents = pgTable(
   ]
 );
 
+// ─── Patent Drawings (lazy EPS cache) ───────────────────────────────
+export const patentDrawings = pgTable(
+  "patent_drawings",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    patentId: uuid("patent_id")
+      .notNull()
+      .references(() => patents.id, { onDelete: "cascade" }),
+    page: integer("page").notNull(),
+    pngData: bytea("png_data").notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (table) => [
+    uniqueIndex("idx_patent_drawings_patent_page").on(table.patentId, table.page),
+    index("idx_patent_drawings_patent").on(table.patentId),
+  ]
+);
+
 // ─── Type Exports ───────────────────────────────────────────────────
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
@@ -319,3 +350,5 @@ export type Briefing = typeof briefings.$inferSelect;
 export type NewBriefing = typeof briefings.$inferInsert;
 export type BriefingPatent = typeof briefingPatents.$inferSelect;
 export type NewBriefingPatent = typeof briefingPatents.$inferInsert;
+export type PatentDrawing = typeof patentDrawings.$inferSelect;
+export type NewPatentDrawing = typeof patentDrawings.$inferInsert;

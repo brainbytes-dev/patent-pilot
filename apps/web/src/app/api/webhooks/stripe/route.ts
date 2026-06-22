@@ -4,6 +4,7 @@ import * as Sentry from "@sentry/nextjs";
 import { sendPaymentFailedEmail, sendSubscriptionCanceledEmail } from "@/lib/email";
 import { trackEvent } from "@/lib/posthog";
 import { getDb, userSubscriptions, payments, eq } from "@repo/db";
+import { users } from "@repo/db/schema";
 
 /**
  * Extract subscription ID from an invoice.
@@ -80,10 +81,12 @@ export async function POST(request: NextRequest) {
 
         if (session.customer && session.subscription) {
           try {
-            const customer = await stripe.customers.retrieve(
-              session.customer as string
-            );
+            const [customer, subscription] = await Promise.all([
+              stripe.customers.retrieve(session.customer as string),
+              stripe.subscriptions.retrieve(session.subscription as string),
+            ]);
             const customerEmail = "deleted" in customer ? null : customer.email;
+            const planId = subscription.items.data[0]?.price.id ?? null;
 
             await db
               .insert(userSubscriptions)
@@ -92,6 +95,7 @@ export async function POST(request: NextRequest) {
                 stripeSubscriptionId: session.subscription as string,
                 status: "active",
                 email: customerEmail,
+                planId,
                 updatedAt: new Date(),
               })
               .onConflictDoUpdate({
@@ -100,9 +104,48 @@ export async function POST(request: NextRequest) {
                   stripeSubscriptionId: session.subscription as string,
                   status: "active",
                   email: customerEmail,
+                  planId,
                   updatedAt: new Date(),
                 },
               });
+
+            // Auto-create account if this came from the public checkout (no prior login)
+            if (customerEmail) {
+              const [existing] = await db
+                .select({ id: users.id })
+                .from(users)
+                .where(eq(users.email, customerEmail))
+                .limit(1);
+
+              if (!existing) {
+                await db.insert(users).values({
+                  email: customerEmail,
+                  name: customerEmail.split("@")[0],
+                  emailVerified: true, // verified via Stripe payment
+                  role: "user",
+                  createdAt: new Date(),
+                  updatedAt: new Date(),
+                });
+
+                // Trigger Better-Auth forget-password so user can set their password
+                const appUrl =
+                  process.env.BETTER_AUTH_URL ??
+                  process.env.NEXT_PUBLIC_APP_URL ??
+                  "http://localhost:3000";
+                await fetch(`${appUrl}/api/auth/forget-password`, {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    email: customerEmail,
+                    redirectTo: "/dashboard",
+                  }),
+                }).catch((e) =>
+                  console.error("forget-password trigger failed:", e)
+                );
+
+                console.log("Auto-created account for:", customerEmail);
+              }
+            }
 
             if (customerEmail && typeof session.subscription === "string") {
               trackEvent("subscription_started", {
@@ -125,9 +168,10 @@ export async function POST(request: NextRequest) {
         console.log("Subscription updated:", subscription.id);
 
         try {
+          const planId = subscription.items.data[0]?.price.id ?? null;
           await db
             .update(userSubscriptions)
-            .set({ status: subscription.status, updatedAt: new Date() })
+            .set({ status: subscription.status, planId, updatedAt: new Date() })
             .where(
               eq(userSubscriptions.stripeSubscriptionId, subscription.id)
             );
