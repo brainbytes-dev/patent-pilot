@@ -210,15 +210,30 @@ export function BriefingEmail({
           <Section style={{ padding: "24px 32px 20px" }}>
             <Row>
               <Column>
-                <Text style={{
-                  fontFamily: F.serif,
-                  fontSize: "22px",
-                  fontWeight: "700",
-                  color: C.ink,
-                  margin: "0",
-                  letterSpacing: "-0.01em",
-                }}>
-                  Patentbrief
+                <Text style={{ margin: "0", fontSize: "0", lineHeight: "0" }}>
+                  <span style={{
+                    display: "inline-block",
+                    width: "28px",
+                    height: "28px",
+                    border: `2px solid ${C.ink}`,
+                    borderRadius: "50%",
+                    textAlign: "center" as const,
+                    lineHeight: "24px",
+                    fontFamily: F.serif,
+                    fontSize: "16px",
+                    fontWeight: "700",
+                    color: C.ink,
+                    verticalAlign: "middle",
+                    marginRight: "10px",
+                  }}>P</span>
+                  <span style={{
+                    fontFamily: F.serif,
+                    fontSize: "22px",
+                    fontWeight: "700",
+                    color: C.ink,
+                    letterSpacing: "-0.01em",
+                    verticalAlign: "middle",
+                  }}>Patentbrief</span>
                 </Text>
               </Column>
               <Column style={{ textAlign: "right" as const }}>

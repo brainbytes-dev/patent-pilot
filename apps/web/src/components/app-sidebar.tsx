@@ -7,7 +7,6 @@ import {
   Eye,
   Settings,
   HelpCircle,
-  FileSearch,
   Search,
 } from "lucide-react"
 
@@ -15,6 +14,7 @@ import { useSession } from "@/lib/auth-client"
 import { NavMain } from "@/components/nav-main"
 import { NavSecondary } from "@/components/nav-secondary"
 import { NavUser } from "@/components/nav-user"
+import { LogoIcon } from "@/components/logo"
 import {
   Sidebar,
   SidebarContent,
@@ -56,7 +56,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               className="data-[slot=sidebar-menu-button]:p-1.5!"
             >
               <a href="/dashboard">
-                <FileSearch className="size-5!" />
+                <LogoIcon size={20} className="shrink-0" />
                 <span className="font-serif text-base font-semibold tracking-tight">Patentbrief</span>
               </a>
             </SidebarMenuButton>

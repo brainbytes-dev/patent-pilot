@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { ModeToggle } from "@/components/theme/theme-toggle";
 import { useSession } from "@/lib/auth-client";
+import { LogoIcon } from "@/components/logo";
 
 export function LandingHeader({ minimal = false }: { minimal?: boolean }) {
   const [scrolled, setScrolled] = useState(false);
@@ -23,8 +24,9 @@ export function LandingHeader({ minimal = false }: { minimal?: boolean }) {
     >
       <nav className="flex justify-between items-center h-20 px-8 md:px-16 max-w-[1280px] mx-auto">
         <div className="flex items-center gap-8">
-          <Link href="/" className="font-serif text-2xl font-bold text-foreground">
-            Patentbrief
+          <Link href="/" className="flex items-center gap-2.5 group">
+            <LogoIcon size={32} className="text-brand-navy dark:text-white" />
+            <span className="font-serif text-2xl font-bold text-brand-navy dark:text-white">Patentbrief</span>
           </Link>
           {!minimal && (
             <div className="hidden md:flex gap-4 items-center ml-8">

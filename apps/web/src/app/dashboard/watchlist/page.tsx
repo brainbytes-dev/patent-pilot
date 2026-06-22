@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Eye, Plus, Pencil, Trash2 } from "lucide-react"
 import { WatchlistModal } from "@/components/watchlist-modal"
+import { INDUSTRY_LABELS } from "@/lib/epo/cpc-map"
 
 interface WatchlistRow {
   id: string
@@ -100,10 +101,10 @@ export default function WatchlistPage() {
             <div key={row.id} className="border rounded-none p-4 space-y-2">
               <div className="flex items-start justify-between gap-2">
                 <div>
-                  <p className="font-medium text-sm">{row.name ?? row.industries.join(", ")}</p>
+                  <p className="font-medium text-sm">{row.name ?? row.industries.map((i) => INDUSTRY_LABELS[i] ?? i).join(", ")}</p>
                   <div className="flex flex-wrap gap-1 mt-1.5">
                     {row.industries.map((i) => (
-                      <Badge key={i} variant="secondary" className="text-xs">{i}</Badge>
+                      <Badge key={i} variant="secondary" className="text-xs">{INDUSTRY_LABELS[i] ?? i}</Badge>
                     ))}
                     {row.keywords.slice(0, 4).map((k) => (
                       <Badge key={k} variant="outline" className="text-xs">{k}</Badge>

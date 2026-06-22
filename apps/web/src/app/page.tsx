@@ -5,6 +5,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { Clock, Lightbulb, Bell, CheckCircle2, Check, X as XIcon } from "lucide-react";
 import { LandingHeader } from "@/components/landing-header";
+import { LogoIcon } from "@/components/logo";
 
 export default function LandingPage() {
   const [billing, setBilling] = useState<"monthly" | "yearly">("monthly")
@@ -21,14 +22,13 @@ export default function LandingPage() {
           <div className="max-w-[1280px] mx-auto px-4 lg:px-16 grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
             <div className="md:col-span-7">
               <span className="font-ibm-plex text-xs tracking-[0.05em] font-semibold text-lp-amber uppercase mb-4 block">
-                Montags-Briefing für Entscheider
+                Wöchentliches Briefing für Entscheider
               </span>
               <h1 className="font-serif text-[48px] leading-[56px] tracking-[-0.02em] font-bold text-lp-ink mb-6">
                 Wissen, was frei wird.
               </h1>
               <p className="text-lg leading-7 text-lp-gray max-w-xl mb-10">
-                Der wöchentliche Patentbrief für den deutschen Mittelstand. Jeden Montag, 8:00 Uhr
-                direkt in Ihrem Postfach. Strategische Freiheit durch präzise Analyse.
+                Der wöchentliche Patentbrief für den deutschen Mittelstand. Direkt in Ihr Postfach. Strategische Freiheit durch präzise Analyse.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
                 <Link
@@ -86,7 +86,7 @@ export default function LandingPage() {
                 {
                   icon: <Bell className="text-lp-amber" size={36} />,
                   title: "Wöchentliches Update",
-                  text: "Keine manuelle Recherche mehr nötig. Erhalten Sie jeden Montagmorgen die kuratierte Liste der relevantesten Patentänderungen direkt per Mail.",
+                  text: "Keine manuelle Recherche mehr nötig. Erhalten Sie wöchentlich die kuratierte Liste der relevantesten Patentänderungen direkt per Mail.",
                 },
               ].map((feature) => (
                 <div
@@ -125,7 +125,7 @@ export default function LandingPage() {
                 Editorial Intelligence
               </span>
               <h2 className="font-serif text-3xl font-semibold leading-10 text-lp-ink mb-6">
-                Kein Patent-Chinesisch.
+                Kein Juristendeutsch.
               </h2>
               <div className="space-y-6">
                 <p className="text-lg leading-7 text-lp-gray">
@@ -140,7 +140,7 @@ export default function LandingPage() {
                 <ul className="space-y-4 pt-4">
                   {[
                     "KI-gestützte Analyse täglich aktualisierter EPO-Daten",
-                    "Fokus auf relevante IPC-Klassen für den Mittelstand",
+                    "Fokus auf relevante Technologiebereiche für den Mittelstand",
                   ].map((item) => (
                     <li key={item} className="flex items-start gap-4">
                       <CheckCircle2 className="text-lp-amber mt-1 shrink-0" size={20} />
@@ -317,7 +317,7 @@ export default function LandingPage() {
               </span>
               <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
                 <h2 className="font-serif text-3xl font-semibold leading-10 text-lp-ink">
-                  Heute Europa. Morgen die Welt.
+                  Heute Europa. Morgen Global.
                 </h2>
                 <p className="text-lp-gray text-sm max-w-sm">
                   Ein abgelaufenes US-Patent kann jedes deutsche Unternehmen weltweit nutzen.
@@ -345,6 +345,7 @@ export default function LandingPage() {
                   {[
                     "1,18 Mio. abgelaufene EP-Patente",
                     "165.000 deutsche Nationalpatente",
+                    "143.000 österreichische Patente",
                     "Wöchentlich aktualisiert",
                   ].map((item) => (
                     <li key={item} className="flex items-center gap-2 text-sm text-lp-ink">
@@ -365,14 +366,15 @@ export default function LandingPage() {
                 </div>
                 <h3 className="font-serif text-xl font-semibold text-lp-ink mb-2">Westeuropa komplett</h3>
                 <p className="text-lp-gray text-sm mb-6">
-                  Nationale Patentregister Österreichs, Grossbritanniens und Frankreichs
-                  ergänzen die EP-Abdeckung um hunderttausende weitere Technologien.
+                  Schweizer Nationalpatente sowie die grossen Register Grossbritanniens und Frankreichs
+                  ergänzen die EP-Abdeckung um über eine Million weitere Technologien.
                 </p>
                 <ul className="space-y-2">
                   {[
-                    "AT: 143.000 Patente",
+                    "CH: 226.000 Patente (IGE-Vollimport)",
                     "GB: 372.000 Patente",
                     "FR: 731.000 Patente",
+                    "ES, NL, SE und weitere",
                   ].map((item) => (
                     <li key={item} className="flex items-center gap-2 text-sm text-lp-gray">
                       <div className="size-3 shrink-0 border border-lp-border" />
@@ -455,7 +457,10 @@ export default function LandingPage() {
       <footer className="w-full bg-lp-paper border-t border-lp-border">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 py-8 px-4 lg:px-16 max-w-[1280px] mx-auto">
           <div className="flex flex-col gap-4">
-            <span className="font-serif text-2xl font-bold text-lp-ink">Patentbrief</span>
+            <span className="flex items-center gap-2.5">
+              <LogoIcon size={28} className="text-lp-ink" />
+              <span className="font-serif text-2xl font-bold text-lp-ink">Patentbrief</span>
+            </span>
             <p className="text-lp-gray text-base">
               Die wöchentliche Analyse der gewerblichen Schutzrechte für die deutsche Wirtschaft.
             </p>

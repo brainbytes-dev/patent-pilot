@@ -126,7 +126,7 @@
   --lp-border: oklch(0.30 0.08 240);
   /* lp-amber / lp-amber-dark stay the same in dark mode */
 
-  --background: var(--brand-navy);
+  --background: oklch(0.14 0.04 255);
   --foreground: oklch(0.95 0.005 240);
   --card: oklch(0.22 0.06 240);
   --card-foreground: oklch(0.95 0.005 240);
@@ -176,5 +176,8 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+  [data-slot="sidebar-inset"] {
+    background-color: var(--color-sidebar);
   }
 }

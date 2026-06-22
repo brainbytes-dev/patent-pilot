@@ -14,7 +14,8 @@ import { ArrowRight } from "lucide-react"
 interface DashboardStats {
   briefingsSent: number
   onboardingComplete: boolean
-  patentsInDb: number
+  patentsInBranch: number
+  newThisWeek: number
   latestBriefingId: string | null
   latestBriefingWeek: string | null
   industries: string[]
@@ -91,7 +92,7 @@ export default function DashboardPage() {
           {stats && stats.briefingsSent === 0 && stats.onboardingComplete && (
             <div className="text-center py-16 text-muted-foreground">
               <p className="text-lg font-medium">
-                Ihr erstes Briefing kommt am Montag um 8 Uhr.
+                Ihr erstes Briefing kommt diese Woche.
               </p>
               <p className="text-sm mt-1">
                 Wir durchsuchen gerade die Patentdatenbank nach relevanten Einträgen.
