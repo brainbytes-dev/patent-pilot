@@ -68,6 +68,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const origin = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "") ||
+      request.nextUrl.origin;
+
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
       line_items: [
@@ -76,8 +79,8 @@ export async function POST(request: NextRequest) {
           quantity: 1,
         },
       ],
-      success_url: `${process.env.NEXT_PUBLIC_APP_URL}${successUrl}?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}${cancelUrl}`,
+      success_url: `${origin}${successUrl}?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${origin}${cancelUrl}`,
       customer_email: user.email,
       metadata: {
         userId: user.id,
