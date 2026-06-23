@@ -25,6 +25,26 @@ function initAuth(): AuthInstance {
     trustedOrigins: (process.env.TRUSTED_ORIGINS || "http://localhost:3003").split(","),
     emailAndPassword: {
       enabled: true,
+      async sendResetPassword({ user, url }: { user: { email: string }; url: string }) {
+        const dryRun = process.env.RESEND_DRY_RUN === "true";
+        if (dryRun) {
+          console.log(`[RESEND_DRY_RUN] Reset-Link für ${user.email}: ${url}`);
+          return;
+        }
+        const apiKey = process.env.RESEND_API_KEY;
+        if (!apiKey) {
+          console.error("RESEND_API_KEY nicht gesetzt — Reset-Mail nicht gesendet. URL:", url);
+          return;
+        }
+        const { Resend } = await import("resend");
+        const resend = new Resend(apiKey);
+        await resend.emails.send({
+          from: process.env.RESEND_FROM_EMAIL ?? "noreply@patentbrief.eu",
+          to: user.email,
+          subject: "Passwort zurücksetzen — Patentbrief",
+          html: `<p>Hallo,</p><p>Klicken Sie auf den folgenden Link um Ihr Passwort zurückzusetzen:</p><p><a href="${url}">${url}</a></p><p>Der Link ist 1 Stunde gültig.</p><p>Patentbrief</p>`,
+        });
+      },
     },
     advanced: {
       database: {

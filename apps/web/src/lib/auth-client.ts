@@ -56,6 +56,14 @@ export const useSession = DEMO_MODE
   ? useDemoSession
   : () => realAuthClient!.useSession();
 
+export const requestPasswordReset = DEMO_MODE
+  ? async (_: { email: string; redirectTo: string }) => ({ data: null, error: null })
+  : (params: { email: string; redirectTo: string }) => realAuthClient!.requestPasswordReset(params);
+
+export const resetPassword = DEMO_MODE
+  ? async (_: { newPassword: string; token: string }) => ({ data: null, error: null })
+  : (params: { newPassword: string; token: string }) => realAuthClient!.resetPassword(params);
+
 /**
  * Update user profile
  */
