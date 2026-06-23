@@ -123,12 +123,12 @@ export function UpgradeModal({ open, onClose, reason }: UpgradeModalProps) {
                 )}
                 <p className="font-serif text-lg font-semibold">{plan.name}</p>
                 <div className="flex items-baseline gap-1 mt-2 mb-1">
-                  <span className="font-mono text-3xl font-semibold">CHF {price}</span>
+                  <span className="font-mono text-3xl font-semibold">€{price}</span>
                   <span className="text-xs text-muted-foreground">/ Monat</span>
                 </div>
                 {billing === "yearly" && (
                   <p className="text-xs text-muted-foreground mb-3">
-                    Sie sparen CHF {annualSaving} / Jahr
+                    Sie sparen €{annualSaving} / Jahr
                   </p>
                 )}
                 <ul className="space-y-2 flex-1 mt-3 mb-5">

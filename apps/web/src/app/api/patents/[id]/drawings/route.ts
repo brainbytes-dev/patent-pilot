@@ -5,7 +5,8 @@ import { patents, patentDrawings } from "@repo/db/schema";
 import { eq } from "drizzle-orm";
 import { headers } from "next/headers";
 import AdmZip from "adm-zip";
-import sharp from "sharp";
+import UTIF from "utif";
+import { PNG } from "pngjs";
 
 const EPS_BASE = "https://data.epo.org/publication-server/rest/v1.2/patents";
 const KIND_CODES = ["B2", "B1", "A1", "A2", "B3"];
@@ -31,9 +32,15 @@ async function fetchZip(patentNumber: string): Promise<{ zip: AdmZip; kind: stri
   return null;
 }
 
-async function tiffEntryToPng(zip: AdmZip, name: string): Promise<Buffer> {
+function tiffEntryToPng(zip: AdmZip, name: string): Buffer {
   const tiff = zip.getEntry(name)!.getData();
-  return sharp(tiff).png().toBuffer();
+  const ifds = UTIF.decode(tiff);
+  UTIF.decodeImage(tiff, ifds[0]);
+  const rgba = UTIF.toRGBA8(ifds[0]);
+  const { width, height } = ifds[0];
+  const png = new PNG({ width, height });
+  png.data = Buffer.from(rgba);
+  return PNG.sync.write(png);
 }
 
 export async function GET(
@@ -92,7 +99,7 @@ export async function GET(
   const inserts = await Promise.allSettled(
     drawingEntries.map(async (name, idx) => {
       const page = idx + 1;
-      const png = await tiffEntryToPng(zip, name);
+      const png = tiffEntryToPng(zip, name);
       await db.insert(patentDrawings).values({
         patentId: id,
         page,

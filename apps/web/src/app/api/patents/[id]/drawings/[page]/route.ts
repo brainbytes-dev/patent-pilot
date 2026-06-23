@@ -5,7 +5,8 @@ import { patents, patentDrawings } from "@repo/db/schema";
 import { eq, and } from "drizzle-orm";
 import { headers } from "next/headers";
 import AdmZip from "adm-zip";
-import sharp from "sharp";
+import UTIF from "utif";
+import { PNG } from "pngjs";
 
 const EPS_BASE = "https://data.epo.org/publication-server/rest/v1.2/patents";
 const KIND_CODES = ["B2", "B1", "A1", "A2", "B3"];
@@ -89,13 +90,19 @@ export async function GET(
   if (!tiffBuffer) return new NextResponse("No drawing found", { status: 404 });
 
   // 4. Convert TIFF → PNG and store
-  const png = await sharp(tiffBuffer).png().toBuffer();
+  const ifds = UTIF.decode(tiffBuffer);
+  UTIF.decodeImage(tiffBuffer, ifds[0]);
+  const rgba = UTIF.toRGBA8(ifds[0]);
+  const { width, height } = ifds[0];
+  const pngImg = new PNG({ width, height });
+  pngImg.data = Buffer.from(rgba);
+  const png = PNG.sync.write(pngImg);
 
   await db.insert(patentDrawings).values({
     patentId: id,
     page: pageNum,
-    pngData: png,
+    pngData: Buffer.from(png),
   }).onConflictDoNothing();
 
-  return pngResponse(png);
+  return pngResponse(Buffer.from(png));
 }

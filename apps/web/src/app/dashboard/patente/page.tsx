@@ -714,7 +714,7 @@ export default function PatenteEntdeckenPage() {
                         onClick={() => setUpgradeOpen(true)}
                         className="bg-accent hover:bg-accent/90 text-accent-foreground px-6 py-2.5 text-sm font-medium transition-colors"
                       >
-                        Jetzt upgraden, ab CHF 250 / Monat
+                        Jetzt upgraden, ab €250 / Monat
                       </button>
                     </div>
                   </div>
@@ -763,7 +763,7 @@ export default function PatenteEntdeckenPage() {
                         onClick={() => setUpgradeOpen(true)}
                         className="bg-accent hover:bg-accent/90 text-accent-foreground px-6 py-2.5 text-sm font-medium transition-colors"
                       >
-                        Jetzt upgraden, ab CHF 250 / Monat
+                        Jetzt upgraden, ab €250 / Monat
                       </button>
                     </div>
                   </div>
