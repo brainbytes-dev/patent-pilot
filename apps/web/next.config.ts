@@ -5,6 +5,8 @@ const nextConfig: NextConfig = {
 
   deploymentId: process.env.VERCEL_DEPLOYMENT_ID,
 
+  serverExternalPackages: ["sharp", "adm-zip"],
+
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "images.unsplash.com" },
