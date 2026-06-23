@@ -20,6 +20,7 @@ export function getDb() {
     max: 10,
     idle_timeout: 20,
     connect_timeout: 10,
+    ssl: databaseUrl.includes("supabase.com") ? "require" : false,
   });
 
   dbInstance = drizzle(pgClient, { schema });
