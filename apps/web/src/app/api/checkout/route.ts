@@ -15,6 +15,52 @@ function getStripe() {
   return stripeClient;
 }
 
+function getRequestOrigin(request: NextRequest) {
+  const configuredOrigin =
+    process.env.APP_URL ??
+    process.env.BETTER_AUTH_URL ??
+    process.env.NEXTAUTH_URL ??
+    process.env.NEXT_PUBLIC_APP_URL;
+
+  if (configuredOrigin) {
+    return new URL(configuredOrigin).origin;
+  }
+
+  const forwardedHost = request.headers.get("x-forwarded-host");
+  const forwardedProto = request.headers.get("x-forwarded-proto") ?? "https";
+  if (forwardedHost) {
+    const host = forwardedHost.split(",")[0]?.trim();
+    const proto = forwardedProto.split(",")[0]?.trim();
+    if (host && proto) return new URL(`${proto}://${host}`).origin;
+  }
+
+  if (request.nextUrl.origin && request.nextUrl.origin !== "null") {
+    return new URL(request.nextUrl.origin).origin;
+  }
+
+  throw new Error("Unable to determine absolute app origin for Stripe checkout");
+}
+
+function buildCheckoutUrl(origin: string, path: unknown, fallbackPath: string) {
+  const redirectPath = typeof path === "string" && path.length > 0
+    ? path
+    : fallbackPath;
+
+  if (/^[a-z][a-z\d+\-.]*:/i.test(redirectPath)) {
+    const url = new URL(redirectPath);
+    if (url.protocol !== "http:" && url.protocol !== "https:") {
+      throw new Error("Checkout redirect URL must use http or https");
+    }
+    return url;
+  }
+
+  if (!redirectPath.startsWith("/")) {
+    throw new Error("Checkout redirect path must start with /");
+  }
+
+  return new URL(redirectPath, `${origin}/`);
+}
+
 /**
  * POST /api/checkout
  * Create a Stripe checkout session
@@ -58,8 +104,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { priceId, successUrl = "/dashboard", cancelUrl = "/" } =
-      await request.json();
+    const { priceId, successUrl, cancelUrl } = await request.json();
 
     if (!priceId) {
       return NextResponse.json(
@@ -68,8 +113,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const origin = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "") ||
-      request.nextUrl.origin;
+    const origin = getRequestOrigin(request);
+    const checkoutSuccessUrl = buildCheckoutUrl(origin, successUrl, "/dashboard");
+    const checkoutCancelUrl = buildCheckoutUrl(origin, cancelUrl, "/");
+    const sessionParamSeparator = checkoutSuccessUrl.search ? "&" : "?";
 
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
@@ -79,8 +126,8 @@ export async function POST(request: NextRequest) {
           quantity: 1,
         },
       ],
-      success_url: `${origin}${successUrl}?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${origin}${cancelUrl}`,
+      success_url: `${checkoutSuccessUrl.toString()}${sessionParamSeparator}session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: checkoutCancelUrl.toString(),
       customer_email: user.email,
       metadata: {
         userId: user.id,
