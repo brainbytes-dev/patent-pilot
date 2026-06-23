@@ -22,13 +22,13 @@ export default function LandingPage() {
           <div className="max-w-[1280px] mx-auto px-4 lg:px-16 grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
             <div className="md:col-span-7">
               <span className="font-ibm-plex text-xs tracking-[0.05em] font-semibold text-lp-amber uppercase mb-4 block">
-                Wöchentliches Briefing für Entscheider
+                Europas erster automatischer Patent-Alert
               </span>
               <h1 className="font-serif text-[48px] leading-[56px] tracking-[-0.02em] font-bold text-lp-ink mb-6">
-                Wissen, was frei wird.
+                Patente laufen ab. Chancen entstehen.
               </h1>
               <p className="text-lg leading-7 text-lp-gray max-w-xl mb-10">
-                Der wöchentliche Patentbrief für den deutschen Mittelstand. Direkt in Ihr Postfach. Strategische Freiheit durch präzise Analyse.
+                Jede Woche sehen Sie, welche Patente in Ihrer Branche ablaufen - und welche Technologien Ihr Unternehmen ab sofort kostenlos und legal nutzen darf.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
                 <Link
@@ -37,9 +37,9 @@ export default function LandingPage() {
                 >
                   Jetzt kostenlos abonnieren
                 </Link>
-                <button type="button" aria-label="Beispiel-Briefing ansehen" className="border-2 border-lp-ink text-lp-ink font-semibold text-sm px-8 py-4 uppercase tracking-widest hover:bg-lp-ink hover:text-white transition-all duration-200 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lp-amber focus-visible:ring-offset-2">
+                <Link href="/beispiel" className="border-2 border-lp-ink text-lp-ink font-semibold text-sm px-8 py-4 uppercase tracking-widest hover:bg-lp-ink hover:text-white transition-all duration-200 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lp-amber focus-visible:ring-offset-2">
                   Beispiel ansehen
-                </button>
+                </Link>
               </div>
             </div>
 
