@@ -338,14 +338,14 @@ export default function LandingPage() {
                 </div>
                 <h3 className="font-serif text-xl font-semibold text-lp-ink mb-2">Europa</h3>
                 <p className="text-lp-gray text-sm mb-6">
-                  EP-Patente decken 38 Mitgliedsstaaten ab. Ein abgelaufenes EP-Patent ist frei nutzbar
-                  in Deutschland, Österreich, Schweiz, Frankreich, Benelux und weiteren.
+                  EP-, deutsche und österreichische Patente — ca. 1,5 Mio. abgelaufene Schutzrechte,
+                  wöchentlich aktualisiert.
                 </p>
                 <ul className="space-y-2">
                   {[
-                    "1,18 Mio. abgelaufene EP-Patente",
-                    "165.000 deutsche Nationalpatente",
-                    "143.000 österreichische Patente",
+                    "1,18 Mio. EP-Patente (38 Mitgliedsstaaten)",
+                    "195.000 deutsche Nationalpatente (DE)",
+                    "141.000 österreichische Patente (AT)",
                     "Wöchentlich aktualisiert",
                   ].map((item) => (
                     <li key={item} className="flex items-center gap-2 text-sm text-lp-ink">
