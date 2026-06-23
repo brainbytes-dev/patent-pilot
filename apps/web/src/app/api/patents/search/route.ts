@@ -39,32 +39,47 @@ const NICHE_PREFIXES: Record<string, string[]> = {
   environment:  ["C02F", "B09", "F23G"],
 };
 
+const SELECT_COLS = {
+  id: patents.id,
+  patentNumber: patents.patentNumber,
+  title: patents.title,
+  titleDe: patents.titleDe,
+  abstractDe: patents.abstractDe,
+  filingDate: patents.filingDate,
+  expiryDate: patents.expiryDate,
+  lapsedAt: patents.lapsedAt,
+  owner: patents.owner,
+  cpcCodes: patents.cpcCodes,
+  status: patents.status,
+} as const;
+
 export async function GET(req: NextRequest) {
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { searchParams } = req.nextUrl;
-  const q = searchParams.get("q")?.trim() ?? "";
-  const regionParam   = searchParams.get("region")   ?? "";
-  const nicheParam    = searchParams.get("niche")    ?? "";
-  const lang          = searchParams.get("lang")     ?? "";
-  const sortParam     = searchParams.get("sort")     ?? "date"; // "date" | "name"
-  const limitRaw  = parseInt(searchParams.get("limit")  ?? "24", 10);
-  const offsetRaw = parseInt(searchParams.get("offset") ?? "0",  10);
-  const limit  = Number.isFinite(limitRaw)  && limitRaw  > 0 ? Math.min(limitRaw,  100) : 24;
+  const q           = searchParams.get("q")?.trim() ?? "";
+  const regionParam = searchParams.get("region") ?? "";
+  const nicheParam  = searchParams.get("niche")  ?? "";
+  const lang        = searchParams.get("lang")   ?? "";
+  const sortParam   = searchParams.get("sort")   ?? "date";
+  const limitRaw    = parseInt(searchParams.get("limit")  ?? "24", 10);
+  const offsetRaw   = parseInt(searchParams.get("offset") ?? "0",  10);
+  const limit  = Number.isFinite(limitRaw)  && limitRaw  > 0 ? Math.min(limitRaw, 100) : 24;
   const offset = Number.isFinite(offsetRaw) && offsetRaw >= 0 ? offsetRaw : 0;
 
-  const tier = await getUserTier(session.user.id);
+  const tier   = await getUserTier(session.user.id);
   const limits = TIER_LIMITS[tier];
 
   const db = getDb();
-  // Nur enriched Patents anzeigen (title vorhanden, kein Placeholder)
+
+  // Base conditions (always applied)
   const conditions = [
     isNotNull(patents.title),
     sql`${patents.title} NOT IN ('[no data]', '[error]')`,
+    or(isNotNull(patents.lapsedAt), sql`${patents.expiryDate} < now()`)!,
   ];
 
-  // Free-Tier: nur letzte 30 Tage sichtbar
   if (limits.lookbackDays !== null) {
     conditions.push(
       sql`COALESCE(${patents.lapsedAt}, ${patents.expiryDate}) >= now() - interval '${sql.raw(String(limits.lookbackDays))} days'`
@@ -91,83 +106,104 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  // Language filter: "de" = only patents with German title (DACH-relevant), "" = all
-  if (lang === "de") {
-    conditions.push(isNotNull(patents.titleDe));
-  }
+  if (lang === "de") conditions.push(isNotNull(patents.titleDe));
 
-  // Zeige alle nicht-aktiven: lapsed ODER regulär abgelaufen
-  conditions.push(
-    or(
-      isNotNull(patents.lapsedAt),
-      sql`${patents.expiryDate} < now()`
-    )!
-  );
-
-  // Region filter: EP/DE/FR/... prefix on patent_number
   if (regionParam && REGION_PREFIXES[regionParam]) {
     const prefixes = REGION_PREFIXES[regionParam]!;
     conditions.push(or(...prefixes.map((p) => sql`${patents.patentNumber} LIKE ${p + "%"}`))!);
   }
 
-  // Niche filter: CPC prefix match on any element of cpc_codes array
-  if (nicheParam && NICHE_PREFIXES[nicheParam]) {
-    const prefixes = NICHE_PREFIXES[nicheParam]!;
-    conditions.push(
-      or(...prefixes.map((p) =>
-        sql`EXISTS (SELECT 1 FROM unnest(${patents.cpcCodes}) AS _c WHERE _c LIKE ${p + "%"})`
-      ))!
-    );
-  }
+  const orderBySql = sortParam === "name"
+    ? sql`COALESCE(title_de, title) ASC NULLS LAST, id ASC`
+    : sql`COALESCE(lapsed_at, expiry_date) DESC NULLS LAST, id ASC`;
 
-  const where = conditions.length > 0 ? and(...conditions) : undefined;
+  // COUNT only on first page — 2.5s scan on every paginated request is too expensive.
+  // Client must preserve `total` across pages.
+  const isFirstPage = offset === 0;
 
   try {
-    const [rows, countRows, breakdown] = await Promise.all([
-      db
-        .select({
-          id: patents.id,
-          patentNumber: patents.patentNumber,
-          title: patents.title,
-          titleDe: patents.titleDe,
-          abstractDe: patents.abstractDe,
-          filingDate: patents.filingDate,
-          expiryDate: patents.expiryDate,
-          lapsedAt: patents.lapsedAt,
-          owner: patents.owner,
-          cpcCodes: patents.cpcCodes,
-          status: patents.status,
-        })
-        .from(patents)
-        .where(where)
-        .orderBy(
-          sortParam === "name"
-            ? sql`COALESCE(${patents.titleDe}, ${patents.title}) ASC NULLS LAST, id ASC`
-            : sql`COALESCE(lapsed_at, expiry_date) DESC NULLS LAST, id ASC`
-        )
-        .limit(limit)
-        .offset(offset),
-      db
-        .select({ count: sql<number>`count(*)::int` })
-        .from(patents)
-        .where(where),
-      // Nur beim ersten Request (offset=0) den Breakdown berechnen
-      offset === 0
+    const nichePrefixes = nicheParam ? (NICHE_PREFIXES[nicheParam] ?? []) : [];
+
+    if (nichePrefixes.length > 0) {
+      // Niche filter: MATERIALIZED CTE forces the planner to use the trigram GIN index
+      // on array_to_string(cpc_codes, ',') before applying the sort.
+      // Without MATERIALIZED, the planner chooses the sort index and evaluates CPC per-row
+      // (16s). With MATERIALIZED, the CTE is pre-filtered via trigram (~100ms), then sorted.
+      const where = and(...conditions)!;
+      const cpcLikeOrs = nichePrefixes.map((p) =>
+        sql`array_to_string(${patents.cpcCodes}, ',') LIKE ${"%" + p + "%"}`
+      );
+
+      const baseWhere = sql`${where} AND (${or(...cpcLikeOrs)!})`;
+
+      const [rows, countResult, breakdown] = await Promise.all([
+        db.execute(sql`
+          WITH cpc_pre AS MATERIALIZED (
+            SELECT id FROM patents
+            WHERE title IS NOT NULL
+              AND title NOT IN ('[no data]', '[error]')
+              AND (${or(...cpcLikeOrs)!})
+          )
+          SELECT
+            p.id, p.patent_number, p.title, p.title_de, p.abstract_de,
+            p.filing_date, p.expiry_date, p.lapsed_at, p.owner, p.cpc_codes, p.status
+          FROM patents p
+          JOIN cpc_pre c ON p.id = c.id
+          WHERE ${where}
+          ORDER BY ${orderBySql}
+          LIMIT ${limit} OFFSET ${offset}
+        `),
+        isFirstPage
+          ? db.select({ count: sql<number>`count(*)::int` }).from(patents).where(baseWhere)
+          : Promise.resolve(null),
+        isFirstPage
+          ? db.select({
+              freeCount:          sql<number>`count(*) FILTER (WHERE lapsed_at < now() - interval '12 months' OR (lapsed_at IS NULL AND expiry_date < now()))::int`,
+              reinstatable_count: sql<number>`count(*) FILTER (WHERE lapsed_at >= now() - interval '12 months')::int`,
+            }).from(patents).where(baseWhere)
+          : Promise.resolve(null),
+      ]);
+
+      const total  = Array.isArray(countResult) ? (countResult[0]?.count ?? 0) : null;
+      const counts = Array.isArray(breakdown) ? breakdown[0] : null;
+
+      return NextResponse.json({
+        results: rows,
+        total,
+        hasMore: (rows as unknown[]).length === limit,
+        limit,
+        offset,
+        freeCount:           counts?.freeCount           ?? null,
+        reinstatable_count:  counts?.reinstatable_count  ?? null,
+      });
+    }
+
+    // Default path (no niche filter): uses idx_patents_enriched_coalesce_date → ~5ms
+    const where = and(...conditions);
+
+    const [rows, countResult, breakdown] = await Promise.all([
+      db.select(SELECT_COLS).from(patents).where(where).orderBy(orderBySql).limit(limit).offset(offset),
+      isFirstPage
+        ? db.select({ count: sql<number>`count(*)::int` }).from(patents).where(where)
+        : Promise.resolve(null),
+      isFirstPage
         ? db.select({
-            freeCount:        sql<number>`count(*) FILTER (WHERE lapsed_at < now() - interval '12 months' OR (lapsed_at IS NULL AND expiry_date < now()))::int`,
+            freeCount:          sql<number>`count(*) FILTER (WHERE lapsed_at < now() - interval '12 months' OR (lapsed_at IS NULL AND expiry_date < now()))::int`,
             reinstatable_count: sql<number>`count(*) FILTER (WHERE lapsed_at >= now() - interval '12 months')::int`,
           }).from(patents).where(where)
         : Promise.resolve(null),
     ]);
-    const total = countRows[0]?.count ?? 0;
-    const counts = Array.isArray(breakdown) ? breakdown[0] : null;
+
+    const total  = Array.isArray(countResult) ? (countResult[0]?.count ?? 0) : null;
+    const counts = Array.isArray(breakdown)   ? breakdown[0]              : null;
+
     return NextResponse.json({
       results: rows,
       total,
-      hasMore: offset + rows.length < total,
+      hasMore: rows.length === limit,
       limit,
       offset,
-      freeCount: counts?.freeCount ?? null,
+      freeCount:          counts?.freeCount          ?? null,
       reinstatable_count: counts?.reinstatable_count ?? null,
     });
   } catch (e) {
